@@ -110,7 +110,12 @@ end
 
 %load stim
 if stim
-    load('behavResources.mat','StimEpoch');
+    try 
+        load('behavResources.mat','StimEpoch');
+    catch
+        warning('No var StimEpoch in behavResources')
+        return
+    end
 end
 
 
@@ -127,5 +132,14 @@ disp('getting sleep stages')
 save('FeaturesScoring', 'featuresNREM', 'Namesfeatures', 'EpochSleep', 'NoiseEpoch', 'scoring')
 [Epoch, NameEpoch] = SubstagesScoring(featuresNREM, NoiseEpoch);
 save('SleepSubstages', 'Epoch', 'NameEpoch')
+
+%% FIGURES
+
+%% Id figure 1
+disp('making ID fig1')
+MakeIDSleepData('recompute',recompute)
+PlotIDSleepData
+print([pathOut 'SleepGlobalDetails'], '-dpng', '-r300');
+
 end
 
