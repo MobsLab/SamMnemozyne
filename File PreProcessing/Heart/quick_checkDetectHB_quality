@@ -1,0 +1,9 @@
+% Visualize HB detection using EKGCheck.fig
+
+load('behavResources.mat');
+stim = Start(and(StimEpoch,SessionEpoch.mfb14))/1e4;
+
+for i=1:length(stim)
+    xlim([stim(i)-5  stim(i)+5]);
+    keyboard %type dbcont to continue and increment
+end

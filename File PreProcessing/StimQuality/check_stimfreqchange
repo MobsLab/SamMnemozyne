@@ -1,0 +1,18 @@
+
+
+stW=ts(Start(Wake)-2E4);
+
+Stim=ts(Start(StimSent)-1E4);
+longWake=dropShortIntervals(longWake,20E4);
+stW=ts(Start(longWake)-2E4);
+
+
+figure
+[M,S,t]=AverageSpectrogram(Stsd,Spectro{3},Restrict(stW,SWSEpoch),200,500,0);
+subplot(2,2,1), imagesc(t,Spectro{3},M), axis xy, caxis([30 40])
+[M,S,t]=AverageSpectrogram(Stsd,Spectro{3},Restrict(stW,REMEpoch),200,500,0);
+subplot(2,2,2), imagesc(t,Spectro{3},M), axis xy, caxis([30 40])
+[M,S,t]=AverageSpectrogram(Stsd,Spectro{3},Restrict(Stim,SWSEpoch),200,500,0);
+subplot(2,2,3), imagesc(t,Spectro{3},M), axis xy, caxis([30 40])
+[M,S,t]=AverageSpectrogram(Stsd,Spectro{3},Restrict(Stim,REMEpoch),200,500,0);
+subplot(2,2,4), imagesc(t,Spectro{3},M), axis xy, caxis([30 40])
