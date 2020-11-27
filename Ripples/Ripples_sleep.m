@@ -1,11 +1,12 @@
-function Ripples_sleep(mice_num)
+function Ripples_sleep(expe, mice_num)
 
 %==========================================================================
 % Details: Output details (density, amplitude, duration) of ripples during
 % sleep
 %
 % INPUTS:
-%       - 
+%       - expe              Name of experiment in PathForExperiment
+%       - mice_num          ID # of all mice for the analyses
 %
 % OUTPUT:
 %       - figure including:
@@ -18,10 +19,6 @@ function Ripples_sleep(mice_num)
 %      
 %==========================================================================
 
-
-
-clear all
-
 %% Parameters
 sav=1;
 dur_parts=10; %duration of sleep parts in minutes
@@ -29,16 +26,13 @@ dur_small=1; %duration of small bins of sleep parts in minutes
 
 
 % Directory to save and name of the figure to save
-dir_out = [dropbox 'DataSL/StimMFBWake/ripples/' date '/'];
-% dir_out = [dropbox '/DataSL/FirstExplo/Novel/ripples/' date '/'];
-% dir_out = ['/home/mobs/Documents/Results//FirstExplo/Novel/ripples/' date '/'];
-% dir_out = '/home/mobs/Dropbox/MOBS_workingON/Sam/FirstExploNew/ripples/M016/';
+dir_out = [dropbox 'DataSL/' expe '/ripples/' date '/'];
 %create folders
 if ~exist(dir_out,'dir')
     mkdir(dir_out);
 end
 
-Dir = PathForExperimentsERC_SL('StimMFBWake');
+Dir = PathForExperimentsERC_SL(expe);
 Dir = RestrictPathForExperiment(Dir, 'nMice', mice_num);
 
 % set text format
