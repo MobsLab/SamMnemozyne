@@ -123,7 +123,7 @@ end
 disp('getting sleep signals')
 CreateSleepSignalsSL('recompute',recompute,'scoring','accelero','stim',1, ...
     'down',down,'delta',delta,'rip',rip,'spindle',spindle, ...
-    'ripthresh',[2 5]);
+    'ripthresh',ripthresh);
 
 
 %% Substages
