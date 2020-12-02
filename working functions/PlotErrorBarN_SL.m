@@ -136,7 +136,7 @@ if ~exist('horizontal','var')
     horizontal=0;
 end
 if ~exist('showpoints','var')
-    showpoints=0;
+    showpoints=1;
 end
 if ~exist('colorpoints','var')
     colorpoints=0;
