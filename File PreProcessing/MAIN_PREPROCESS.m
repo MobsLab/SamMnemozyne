@@ -115,7 +115,7 @@ if ss
     % add a array of sleep scoring to OBgamma
     make_sleepscoringarray
     % create an event file for neuroscope
-    make_sleepscoring_events
+    make_sleepscoring_event
     % Note: if no sleep it will crash when creating theta epoch. But the
     % SleepScoring_.mat will have been created.
 end
