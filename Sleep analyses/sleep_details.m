@@ -70,6 +70,11 @@ for i = 1:2:length(varargin)
             if ~isnumeric(ripthresh)
                 error('Incorrect value for property ''ripthresh''.');
             end
+        case 'nonrip'
+            nonRip = varargin{i+1};
+            if ~isnumeric(nonRip)
+                error('Incorrect value for property ''nonRip''.');
+            end
         otherwise
             error(['Unknown property ''' num2str(varargin{i}) '''.']);
     end
@@ -123,7 +128,7 @@ end
 disp('getting sleep signals')
 CreateSleepSignalsSL('recompute',recompute,'scoring','accelero','stim',1, ...
     'down',down,'delta',delta,'rip',rip,'spindle',spindle, ...
-    'ripthresh',ripthresh);
+    'ripthresh',ripthresh,'nonrip',nonRip);
 
 
 %% Substages
