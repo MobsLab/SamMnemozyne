@@ -26,11 +26,11 @@ dir_out = [dropbox '/DataSL/StimMFBWake/sleep_architecture/' date '/'];
 
 % Numbers of mice to run analysis on
 % Mice_to_analyze = [882 941]; % MFBStimWake
-Mice_to_analyze = [016]; % FirstExploNew
+Mice_to_analyze = [117]; % FirstExploNew
 
 
 % Get directories
-Dir = PathForExperimentsERC_SL_home('FirstExploNew');
+Dir = PathForExperimentsERC_SL('StimMFBWake');
 % Dir = PathForExperimentsERC_SL('Reversal');
 Dir = RestrictPathForExperiment(Dir,'nMice', Mice_to_analyze);
 
