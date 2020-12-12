@@ -105,6 +105,24 @@ for i = 1:2:length(varargin)
             if ~isnumeric(PFCx_deltasup) 
                 error('Incorrect value for property ''PFCx_deltasup''.');
             end
+         case 'pfcx_sup'
+            PFCx_sup = varargin{i+1};
+            ExpeInfo.ChannelToAnalyse.PFCx_sup=PFCx_sup;
+            load([pwd '/ChannelsToAnalyse/PFCx_sup.mat']);
+            channel=PFCx_sup;
+            save([pwd '/ChannelsToAnalyse/PFCx_sup.mat'],'channel');
+            if ~isnumeric(PFCx_sup) 
+                error('Incorrect value for property ''PFCx_sup''.');
+            end
+         case 'pfcx_deep'
+            PFCx_deep = varargin{i+1};
+            ExpeInfo.ChannelToAnalyse.PFCx_deep=PFCx_deep;
+            load([pwd '/ChannelsToAnalyse/PFCx_deep.mat']);
+            channel=PFCx_deep;
+            save([pwd '/ChannelsToAnalyse/PFCx_deep.mat'],'channel');
+            if ~isnumeric(PFCx_deep) 
+                error('Incorrect value for property ''PFCx_deep''.');
+            end
          case 'pfcx_spindle'
             PFCx_spindle = varargin{i+1};
             ExpeInfo.ChannelToAnalyse.PFCx_spindle=PFCx_spindle;
