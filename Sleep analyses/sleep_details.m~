@@ -10,6 +10,7 @@ function sleep_details(varargin)
 %       - rip           Detect ripples (default: 1). Need HPC rip channel.
 %       - spindle       Detect spindles (default: 1). Need PFC spindle channel.
 %       - ripthresh     Ripple thresholds (default: [5 7])
+%       - nonrip        Channel without ripples (ideally from HPC)
 % 
 % OUTPUT:
 %       - figure including:
@@ -70,6 +71,11 @@ for i = 1:2:length(varargin)
             if ~isnumeric(ripthresh)
                 error('Incorrect value for property ''ripthresh''.');
             end
+        case 'nonrip'
+            nonRip = varargin{i+1};
+            if ~isnumeric(nonRip)
+                error('Incorrect value for property ''nonRip''.');
+            end
         otherwise
             error(['Unknown property ''' num2str(varargin{i}) '''.']);
     end
@@ -110,22 +116,27 @@ end
 
 %load stim
 if stim
-    load('behavResources.mat','StimEpoch');
+    try 
+        load('behavResources.mat','StimEpoch');
+    catch
+        warning('No var StimEpoch in behavResources')
+        return
+    end
 end
 
 
 %% Sleep event
 disp('getting sleep signals')
-CreateSleepSignalsSL('recompute',recompute,'scoring','accelero','stim',1, ...
+CreateSleepSignalsSL('recompute',recompute,'scoring','ob','stim',1, ...
     'down',down,'delta',delta,'rip',rip,'spindle',spindle, ...
-    'ripthresh',[2 5]);
+    'ripthresh',ripthresh,'nonrip',nonRip);
 
 
 %% Substages
 disp('getting sleep stages')
-[featuresNREM, Namesfeatures, EpochSleep, NoiseEpoch, scoring] = FindNREMfeatures('scoring','accelero');
+[featuresNREM, Namesfeatures, EpochSleep, NoiseEpoch, scoring] = FindNREMfeatures('scoring','ob');
 save('FeaturesScoring', 'featuresNREM', 'Namesfeatures', 'EpochSleep', 'NoiseEpoch', 'scoring')
-[Epoch, NameEpoch] = SubstagesScoring(featuresNREM, NoiseEpoch);
+[Epoch, NameEpoch] = SubstagesScoring(featuresNREM, NoiseEpoch,'burstis3',0,'removesi',1);
 save('SleepSubstages', 'Epoch', 'NameEpoch')
 
 %% FIGURES
@@ -135,32 +146,6 @@ disp('making ID fig1')
 MakeIDSleepData('recompute',recompute)
 PlotIDSleepData
 print([pathOut 'SleepGlobalDetails'], '-dpng', '-r300');
-
-
-    if stim 
-    %% Hypnogram with stim
-    load('IdFigureData.mat');
-
-    figure('Color',[1 1 1],'units','normalized', 'position', [0 0 .8 .3]); %'outerposition',[0 0 1 1]);
-
-        ylabel_substage = {'N3','N2','N1','REM','WAKE'};
-        ytick_substage = [1 1.5 2 3 4]; %ordinate in graph
-        colori = {[0.5 0.3 1], [1 0.5 1], [0.8 0 0.7], [0.1 0.7 0], [0.5 0.2 0.1]}; %substage color
-        plot(Range(SleepStages,'s')/3600,Data(SleepStages),'k'), hold on,
-        for ep=1:length(Epochs)
-            plot(Range(Restrict(SleepStages,Epochs{ep}),'s')/3600 ,Data(Restrict(SleepStages,Epochs{ep})),'.','Color',colori{ep}), hold on,
-        end
-        if stim
-            plot(Start(StimEpoch)/1e4/3600,3,'r*')
-        end
-
-        xlim([0 max(Range(SleepStages,'s')/3600)]), ylim([0.5 5]), set(gca,'Ytick',ytick_substage,'YTickLabel',ylabel_substage), hold on,
-
-        title('Hypnogram'); xlabel('Time (h)')
-
-        print([pathOut 'HypnogramStim'], '-dpng', '-r300');
-    end
-
 
 end
 

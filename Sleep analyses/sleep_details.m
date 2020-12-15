@@ -10,6 +10,7 @@ function sleep_details(varargin)
 %       - rip           Detect ripples (default: 1). Need HPC rip channel.
 %       - spindle       Detect spindles (default: 1). Need PFC spindle channel.
 %       - ripthresh     Ripple thresholds (default: [5 7])
+%       - nonrip        Channel without ripples (ideally from HPC)
 % 
 % OUTPUT:
 %       - figure including:
@@ -126,16 +127,16 @@ end
 
 %% Sleep event
 disp('getting sleep signals')
-CreateSleepSignalsSL('recompute',recompute,'scoring','accelero','stim',1, ...
+CreateSleepSignalsSL('recompute',recompute,'scoring','ob','stim',1, ...
     'down',down,'delta',delta,'rip',rip,'spindle',spindle, ...
     'ripthresh',ripthresh,'nonrip',nonRip);
 
 
 %% Substages
 disp('getting sleep stages')
-[featuresNREM, Namesfeatures, EpochSleep, NoiseEpoch, scoring] = FindNREMfeatures('scoring','accelero');
+[featuresNREM, Namesfeatures, EpochSleep, NoiseEpoch, scoring] = FindNREMfeatures('scoring','ob');
 save('FeaturesScoring', 'featuresNREM', 'Namesfeatures', 'EpochSleep', 'NoiseEpoch', 'scoring')
-[Epoch, NameEpoch] = SubstagesScoring(featuresNREM, NoiseEpoch);
+[Epoch, NameEpoch] = SubstagesScoring(featuresNREM, NoiseEpoch,'burstis3',1,'removesi',1,'newburstthresh',1);
 save('SleepSubstages', 'Epoch', 'NameEpoch')
 
 %% FIGURES
