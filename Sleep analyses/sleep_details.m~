@@ -136,16 +136,21 @@ CreateSleepSignalsSL('recompute',recompute,'scoring','ob','stim',1, ...
 disp('getting sleep stages')
 [featuresNREM, Namesfeatures, EpochSleep, NoiseEpoch, scoring] = FindNREMfeatures('scoring','ob');
 save('FeaturesScoring', 'featuresNREM', 'Namesfeatures', 'EpochSleep', 'NoiseEpoch', 'scoring')
-[Epoch, NameEpoch] = SubstagesScoring(featuresNREM, NoiseEpoch,'burstis3',0,'removesi',1);
+[Epoch, NameEpoch] = SubstagesScoring(featuresNREM, NoiseEpoch,'burstis3',1,'removesi',1,'newburstthresh',1);
 save('SleepSubstages', 'Epoch', 'NameEpoch')
 
-%% FIGURES
+%% GLOBAL FIGURES
 
 %% Id figure 1
 disp('making ID fig1')
 MakeIDSleepData('recompute',recompute)
 PlotIDSleepData
 print([pathOut 'SleepGlobalDetails'], '-dpng', '-r300');
+
+%% Id figure 2
+MakeIDSleepData2('scoring','ob','recompute',1)
+PlotIDSleepData2
+print([pathOut 'DeltaGlobalDetails'], '-dpng', '-r300');
 
 end
 

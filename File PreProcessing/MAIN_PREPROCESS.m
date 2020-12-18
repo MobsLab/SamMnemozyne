@@ -127,17 +127,11 @@ end
 
 %% DELTA, RIPPLES & SPINDLES    
 if osc
+    % set non-rippples HPC channel here
+    channel = 2;
+    save([pwd '/ChannelsToAnalyse/nonHPC.mat'],'channel')
     % detect events, substages, create .mat and event files, ID Figure
     sleep_details('recompute',1,'save_data',1,'stim',1,'down',1,'delta',1,'rip',1,'spindle',1)
-    
-    % old code
-%     % Detect ripples events
-%     if exist('ChannelsToAnalyse/dHPC_rip.mat')==2
-%         rip_chan = load('ChannelsToAnalyse/dHPC_rip.mat');
-% %         nonrip_chan = load('ChannelsToAnalyse/Bulb_sup.mat');
-%         
-%         [ripples,stdev] = FindRipples_SL(rip_chan.channel, nonrip_chan.channel, [2 5],'rmvnoise',0, 'clean',1,'immobile',1); % [2 7],'rmvnoise',1, 'clean',1);
-%     end
 end
 
 % -------------------------
