@@ -129,14 +129,14 @@ end
 disp('getting sleep signals')
 CreateSleepSignalsSL('recompute',recompute,'scoring','ob','stim',1, ...
     'down',down,'delta',delta,'rip',rip,'spindle',spindle, ...
-    'ripthresh',ripthresh,'nonrip',nonRip);
+    'ripthresh',ripthresh);
 
 
 %% Substages
 disp('getting sleep stages')
 [featuresNREM, Namesfeatures, EpochSleep, NoiseEpoch, scoring] = FindNREMfeatures('scoring','ob');
 save('FeaturesScoring', 'featuresNREM', 'Namesfeatures', 'EpochSleep', 'NoiseEpoch', 'scoring')
-[Epoch, NameEpoch] = SubstagesScoring(featuresNREM, NoiseEpoch,'burstis3',0,'removesi',1,'newburstthresh',1);
+[Epoch, NameEpoch] = SubstagesScoring(featuresNREM, NoiseEpoch,'burstis3',1,'removesi',1,'newburstthresh',1);
 save('SleepSubstages', 'Epoch', 'NameEpoch')
 
 %% GLOBAL FIGURES
