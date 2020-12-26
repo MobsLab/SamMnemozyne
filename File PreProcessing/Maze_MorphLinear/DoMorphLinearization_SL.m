@@ -21,8 +21,8 @@ for isess = 1:length(sess)
         close all
     else
         disp('Alignement already done.');
-        clear AlignedXtsd AlignedYtsd 'ZoneEpochAligned' 'XYOutput';
     end
+    clear AlignedXtsd AlignedYtsd 'ZoneEpochAligned' 'XYOutput';
 
     % Linear
     load('behavResources.mat','LinearDist')
@@ -52,8 +52,8 @@ for isess = 1:length(sess)
         save('behavResources.mat', 'LinearDist','-append');
     else
         disp('Linear config already done.');
-        clear LinearDist;
     end
+    clear LinearDist;
     cd(Dir) 
 end
 end
