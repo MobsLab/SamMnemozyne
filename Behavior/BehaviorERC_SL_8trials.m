@@ -22,7 +22,6 @@ function BehaviorERC_SL_8trials(expe,Mice_to_analyze)
 %       QuickCheckBehaviorERC, PathForExperimentERC_SL or Dima
 %==========================================================================
 
-clear all
 rmpath([dropbox '\DataSL\Matlab_scripts\working functions\generic\eeglab\sccn-eeglab-e35d7ab\functions\miscfunc\']);
 
 %% Parameters
@@ -76,7 +75,7 @@ finalfig = 1;
 % Mice_to_analyze = [117 124]; % MFBStimWake
 % mice_str = {'117 124'};
 
-mice_str = num2cell(Mice_to_analyze);
+mice_str = num2cell(num2str(Mice_to_analyze));  % might not work with legend if ,ultiple mice
 
 %--------------- GET DIRECTORIES-------------------
 % Dir = PathForExperimentsERC_SL('StimMFBWake');
@@ -1239,11 +1238,13 @@ if traj_all
 
 
             subplot(2,4,itrial+4)
-
-%                 [p_occ,h_occ, her_occ] = PlotErrorBarN_SL([Post_Occup_stim(:,itrial)*100 Post_Occup_nostim(:,itrial)*100],...
-%                     'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'paired',0, 'colorpoints',1);
-                [p_occ,h_occ, her_occ] = PlotErrorBarN_SL([Post_Occup_stim(:,itrial)*100 Post_Occup_nostim(:,itrial)*100],...
+                if length(Mice_to_analyze)>1
+                    [p_occ,h_occ, her_occ] = PlotErrorBarN_SL([Post_Occup_stim(:,itrial)*100 Post_Occup_nostim(:,itrial)*100],...
                     'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'colorpoints',1,'optiontest','ttest','norm',0);
+                else
+                    [p_occ,h_occ, her_occ] = PlotErrorBarN_SL([Post_Occup_stim(:,itrial)*100 Post_Occup_nostim(:,itrial)*100],...
+                    'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'paired',0, 'colorpoints',1);
+                end
                 h_occ.FaceColor = 'flat';
                 h_occ.CData(2,:) = [1 1 1];
                 set(gca,'Xtick',[1:2],'XtickLabel',{' Stim \newline zone ', ' No-stim \newline zone '});
