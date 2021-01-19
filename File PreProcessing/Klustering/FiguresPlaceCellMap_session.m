@@ -4,11 +4,16 @@ function FiguresPlaceCellMap_session(session, varargin)
 % Details: Output firing location in space
 %
 % INPUTS:
-%       - session: session name to be mapped (string in cell: {'Hab1','Hab2'})
+%       - session:  session name to be mapped (string in cell:
+%                   {'Hab1','Hab2'}). If only one session, it still must be
+%                   between curly brackets (as cell). 
+%
 %       - varargin:
 %               - pooled: set to 0 default. Set to 1 to pool the sessions
 %               into one.
 %               - save_data: saving data = 1 (default)
+%               - recompute spikes (if changes were made to clu files):
+%               default = 1
 %
 % OUTPUT:
 %       - figures including:
@@ -33,6 +38,12 @@ for i = 1:2:length(varargin)
     switch(lower(varargin{i}))
         case 'pooled'
             pooled = varargin{i+1};
+        case 'save_data'
+            save_data = varargin{i+1};
+        case 'recompute'
+            recompute = varargin{i+1};
+        case 'plotfig'
+            plotfig = varargin{i+1};
         otherwise
             error(['Unknown property ''' num2str(varargin{i}) '''.']);
     end
@@ -47,10 +58,28 @@ end
 if ~exist('save_data','var')
     save_data = 1;
 end
+%recompute?
+if ~exist('recompute','var')
+    recompute = 1;
+end
+%plot figures?
+if ~exist('plotfig','var')
+    plotfig = 0;
+end
 
 
 %INIT VAR
 nsess=length(session);
+
+%saving all trajectories maps parameters
+dirPath = [pwd '/PlaceCells/' date '/' ];
+figName = 'All_traj';
+sformat = 'dpng';
+res = 300;
+% create directory if doesn't exist and set permissions
+if ~exist(dirPath, 'dir')
+    mkdir(dirPath);
+end
 
 %% MAIN SCRIPT
 load('behavResources.mat');
@@ -67,7 +96,7 @@ end
 
 
 SetCurrentSession('same');
-MakeData_Spikes('mua',1,'recompute',1);
+MakeData_Spikes('mua',1,'recompute',recompute);
 
 load('SpikeData.mat');
 
@@ -107,11 +136,15 @@ if pooled % pooled sessions
             [map{i}, mapNS, stats{i}, px{i}, py{i}, FR{i}, xB, yB] = ... 
                 PlaceField_DB(Restrict(Restrict(S{i},LocomotionEpoch),SessPool), ...
                 Restrict(XS,SessPool), Restrict(YS,SessPool), ... 
-                'smoothing',1.5, 'size', 50,'plotresults',0);
+                'smoothing',1.5, 'size', 50,'plotresults',0,'plotpoisson',plotfig);
             hold on
             mtit(cellnames{i}, 'fontsize',14, 'xoff', -.6, 'yoff', 0) %set global title for each figure (tetrode and cluster #)
             if save_data
-                print([pwd '/PlaceCells/' date '/' cellnames{i} ], '-dpng', '-r300'); %
+                dirPath = [pwd '/PlaceCells/' date '/'];
+                print([dirPath cellnames{i}], '-dpng', '-r300'); %
+                if isunix
+                    system(['sudo chown -R mobs /' dirPath]);
+                end
             end
         catch
             disp(['No map available for ' cellnames{i}]);
@@ -139,7 +172,7 @@ if pooled % pooled sessions
 %     end
     
     supertit='All clusters from all tet/probes';
-    figure2(1,'Color',[1 1 1], 'rend','painters','pos',[1 1 1800 1200],'Name', supertit, 'NumberTitle','off')
+    H = figure2(1,'Color',[1 1 1], 'rend','painters','pos',[1 1 1800 1200],'Name', supertit, 'NumberTitle','off');
     for i=1:length(S) 
         if ~isempty(map{i})
             si = round(stats{i}.spatialInfo,2);
@@ -154,7 +187,19 @@ if pooled % pooled sessions
                 title([cellnames{i} ', SI:' num2str(si) ', FR:' num2str(fr)],'FontSize',6);
         end
     end
-    print([pwd '/PlaceCells/' date '/All_traj' ], '-dpng', '-r300');
+    
+    % saving
+    set(H,'paperPositionMode','auto')
+    for i=1:length(sformat)
+        print(H,[dirPath figName], ['-' sformat], ['-r' num2str(res)]);
+    end
+    % saving in .fig format 
+    saveas(H,[dirPath figName],'fig');
+
+    % special case for Matlab on Linux using in root 
+    if isunix
+        system(['sudo chown -R mobs /' dirPath]);
+    end
     
 else  % individual sessions
     for isess=1:nsess
@@ -167,7 +212,7 @@ else  % individual sessions
                 PlaceField_DB(Restrict(Restrict(S{i},LocomotionEpoch),SessionEpoch.(fSess{id_sess(isess)})), ...
                     Restrict(XS,SessionEpoch.(fSess{id_sess(isess)})), ... 
                     Restrict(YS,SessionEpoch.(fSess{id_sess(isess)})), ... 
-                    'smoothing',1.5, 'size', 50,'plotresults',0);
+                    'smoothing',1.5, 'size', 50,'plotresults',0,'plotpoisson',plotfig);
                 hold on
                 mtit(cellnames{i}, 'fontsize',14, 'xoff', -.6, 'yoff', 0) %set global title for each figure (tetrode and cluster #)
                 if save_data
@@ -199,7 +244,7 @@ else  % individual sessions
 %             end
 %         end
         supertit='All clusters from all tet/probes';
-        figure2(1,'Color',[1 1 1], 'rend','painters','pos',[1 1 1800 1200],'Name', supertit, 'NumberTitle','off')
+        H = figure2(1,'Color',[1 1 1], 'rend','painters','pos',[1 1 1800 1200],'Name', supertit, 'NumberTitle','off');
         for i=1:length(S) 
             if ~isempty(map{i})
                 si = round(stats{i}.spatialInfo,2);
@@ -214,7 +259,19 @@ else  % individual sessions
                     title([cellnames{i} ', SI:' num2str(si) ', FR:' num2str(fr)],'FontSize',6);
             end
         end
-        print([pwd '/PlaceCells/' date '/All_traj' ], '-dpng', '-r300');
+        
+        % saving
+        set(H,'paperPositionMode','auto')
+        for i=1:length(sformat)
+            print(H,[dirPath figName], ['-' sformat], ['-r' num2str(res)]);
+        end
+        % saving in .fig format 
+        saveas(H,[dirPath figName],'fig');
+
+        % special case for Matlab on Linux using in root 
+        if isunix
+            system(['sudo chown -R mobs /' dirPath]);
+        end
     end
 end
 
