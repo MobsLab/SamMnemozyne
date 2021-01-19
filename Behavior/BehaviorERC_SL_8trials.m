@@ -45,37 +45,15 @@ ntrial_prepost = 8;   % number of trial to show in figures whether it is classic
 
 %-------------- CHOOSE FIGURE TO OUTPUT ----------
 % per mouse
-trajdyn = 1; % Trajectories + barplot + zone dynamics 
-firstentry = 1; % 1st entry barplot per mouse
-trajoccup = 1; % trajectories and mean occupancy
+trajdyn = 0; % Trajectories + barplot + zone dynamics 
+firstentry = 0; % 1st entry barplot per mouse
+trajoccup = 0; % trajectories and mean occupancy
 
-globalstats = 1; % global statistiques (not complete)
-heatmaps = 1; % heatmaps all mice
+globalstats = 0; % global statistiques (not complete)
+heatmaps = 0; % heatmaps all mice
 traj_all = 1; %trajectories all mice
-finalfig = 1;
-
-%--------------- MICE TO ANALYZE ----------------
-
-
-% Mice_to_analyze = [936 941 934 935 863 913]; % MFBStimWake
-% mice_str = {'936','941','934','935','863','913'};
-
-% Mice_to_analyze = [863 913 934 941]; % MFBStimWake
-% mice_str = {'863','913','934','941'};
-
-% % good learners
-% Mice_to_analyze = [882 941 934 863 913]; % MFBStimWake
-% mice_str = {'882','941','934','863','913'};
-
-% all mice
-% Mice_to_analyze = [882 936 941 934 935 863 913]; % MFBStimWake
-% mice_str = {'882','936','941','934','935','863','913'};
-
-% new mouse
-% Mice_to_analyze = [117 124]; % MFBStimWake
-% mice_str = {'117 124'};
-
-mice_str = num2cell(num2str(Mice_to_analyze));  % might not work with legend if ,ultiple mice
+finalfig = 0;
+heatstat = 0;
 
 %--------------- GET DIRECTORIES-------------------
 % Dir = PathForExperimentsERC_SL('StimMFBWake');
@@ -127,6 +105,7 @@ fun = @(block_struct) mean2(block_struct.data);
 % #
 % #####################################################################
 
+
 %% Get data
 for i = 1:length(Dir.path)
     a{i} = load([Dir.path{i}{1} '/behavResources.mat'], 'behavResources');
@@ -172,6 +151,8 @@ for i=1:length(a)
     end
     id_Pre{i}=find(id_Pre{i});
     id_Post{i}=find(id_Post{i});
+    % get nbr of cond trial
+    nbprepost(i) = length(id_Pre{i});
     if cond
         id_Cond{i}=find(id_Cond{i});
         % get nbr of cond trial
@@ -419,7 +400,7 @@ trajzone_pre{length(a),8}=nan;
 trajzone_post{length(a),8}=nan;
 
 for i=1:length(a)
-    for itrial=1:8
+    for itrial=1:nbprepost(i)
         nzones = size(a{i}.behavResources(id_Pre{i}(itrial)).ZoneIndices,2)-2; %there are two zones in position 6 and 7 that are not used. *sigh*
         for izone=1:nzones
             if izone<6
@@ -484,7 +465,7 @@ end
 for i=1:length(a)
     if trajdyn
         supertit = ['Mouse ' num2str(Mice_to_analyze(i))  ' - trial dynamics'];
-        figure('Color',[1 1 1], 'rend','painters','pos',[10 10 2000 1400],'Name', supertit, 'NumberTitle','off')
+        figH_ind.trajdyn{i} = figure('Color',[1 1 1], 'rend','painters','pos',[10 10 2000 1400],'Name', supertit, 'NumberTitle','off')
         % prepare data visualization (stim, nostim for each trial in the same vector)   
     %         datpre = nan(8);
     %         datcond = nan(8);
@@ -783,7 +764,7 @@ for i=1:length(a)
     %----------------------------------------------------------------------
     if firstentry 
         supertit = ['Mouse ' num2str(Mice_to_analyze(i))  ' - Latency to first entry'];
-        figure('Color',[1 1 1], 'rend','painters','pos',[10 10 1300 600],'Name', supertit, 'NumberTitle','off')
+        figH_ind.firstentry{i} = figure('Color',[1 1 1], 'rend','painters','pos',[10 10 1300 600],'Name', supertit, 'NumberTitle','off')
             pre_max=Pre_FirstTime;
             post_max=Post_FirstTime;
             pre_max(pre_max==240)=0;
@@ -842,10 +823,10 @@ for i=1:length(a)
     % Trajectories, barplot (stim/no-stim) per mouse   
     if trajoccup    
             supertit = ['Mouse ' num2str(Mice_to_analyze(i))  ' - Trajectories'];
-            figure('Color',[1 1 1], 'rend','painters','pos',[1 1 2000 1200],'Name', supertit, 'NumberTitle','off')
+            figH_ind.trajoccup{i} = figure('Color',[1 1 1], 'rend','painters','pos',[1 1 2000 1200],'Name', supertit, 'NumberTitle','off')
 
                 subplot(3,3,1) 
-                    for k=1:8    
+                    for k=1:nbprepost(i)    
                         % -- trajectories    
                         p1(k) = plot(Data(a{i}.behavResources(id_Pre{i}(k)).AlignedXtsd),...
                             Data(a{i}.behavResources(id_Pre{i}(k)).AlignedYtsd),...
@@ -893,7 +874,7 @@ for i=1:length(a)
                 end
 
                 subplot(3,3,3) 
-                    for k=1:8 
+                    for k=1:nbprepost(i) 
                         % -- trajectories    
                         p3(k) = plot(Data(a{i}.behavResources(id_Post{i}(k)).AlignedXtsd),...
                             Data(a{i}.behavResources(id_Post{i}(k)).AlignedYtsd),...
@@ -1056,7 +1037,7 @@ end
 %--------------------------------------------------------------------------
 
 if globalstats
-    fh = figure('units', 'normalized', 'outerposition', [0 0 0.65 0.65]);
+    figH.globalstats = figure('units', 'normalized', 'outerposition', [0 0 0.65 0.65]);
         Occupancy_Axes = axes('position', [0.07 0.55 0.41 0.41]);
         NumEntr_Axes = axes('position', [0.55 0.55 0.41 0.41]);
         First_Axes = axes('position', [0.07 0.05 0.41 0.41]);
@@ -1146,7 +1127,7 @@ if heatmaps
         occHS_cond_mean = squeeze(mean(mean(occHS_Cond,1)));
     end
 
-    figure('Color',[1 1 1], 'render','painters','position',[10 10 1600 375])
+    figH.heatmaps = figure('Color',[1 1 1], 'render','painters','position',[10 10 1600 375])
         % occupancy
         subplot(1,3,1)
             imagesc([1:320],[1:240],flip(squeeze(occHS_pre_mean))) 
@@ -1203,65 +1184,68 @@ end
 
 %--------------------------------------------------------------------------
 %-------------------------TRAJECTORIES ALL MICE----------------------------
-%--------------------------------------------------------------------------
-
+%--------------------------------------------------------------------------      
+    
 if traj_all
     supertit = 'Post-test trajectories per trial';
-    figure('Color',[1 1 1], 'rend','painters','pos',[1 1 2000 1000],'Name', supertit, 'NumberTitle','off')
-        for itrial=1:4
-            subplot(2,4,itrial) 
+    figH.traj_all = figure('Color',[1 1 1], 'rend','painters','pos',[1 1 2100 600],'Name', supertit, 'NumberTitle','off');
+        for itrial=1:8
+            subplot(2,8,itrial) 
                 for i=1:length(a)
-                    % -- trajectories    
-                    p1(i) = plot(Data(a{i}.behavResources(id_Post{i}(itrial)).AlignedXtsd),...
-                        Data(a{i}.behavResources(id_Post{i}(itrial)).AlignedYtsd),...
-                             'linewidth',1.5);  
-                    hold on
-                        tempX = Data(a{i}.behavResources(id_Post{i}(itrial)).AlignedXtsd);
-                        tempY = Data(a{i}.behavResources(id_Post{i}(itrial)).AlignedYtsd);
-                        plot(tempX(a{i}.behavResources(id_Post{i}(itrial)).PosMat(:,4)==1),tempY(a{i}.behavResources(id_Post{i}(itrial)).PosMat(:,4)==1),...
-                            'p','Color','k','MarkerFaceColor','g','MarkerSize',16);
-                        clear tempX tempY
-                    axis off
+                    if itrial<=nbprepost(i)
+                        % -- trajectories    
+                        p1(i) = plot(Data(a{i}.behavResources(id_Post{i}(itrial)).AlignedXtsd),...
+                            Data(a{i}.behavResources(id_Post{i}(itrial)).AlignedYtsd),...
+                                 'linewidth',1.5);  
+                        hold on
+                            tempX = Data(a{i}.behavResources(id_Post{i}(itrial)).AlignedXtsd);
+                            tempY = Data(a{i}.behavResources(id_Post{i}(itrial)).AlignedYtsd);
+                            plot(tempX(a{i}.behavResources(id_Post{i}(itrial)).PosMat(:,4)==1),tempY(a{i}.behavResources(id_Post{i}(itrial)).PosMat(:,4)==1),...
+                                'p','Color','k','MarkerFaceColor','g','MarkerSize',16);
+                            clear tempX tempY
+                        axis off
 
-                    xlim([-.05 1.05])
-                    ylim([-.05 1.05])
-                    title(['Trial #' num2str(itrial)])
-                    % constructing the u maze
-                    f_draw_umaze 
-                    if itrial == 1 && i== length(a)
-                        axP = get(gca,'Position');
-                        lg = legend(p1([1:length(Mice_to_analyze)]),mice_str,'Location','WestOutside');
-                        title(lg,'Mice')
-                        set(gca, 'Position', axP)
+                        xlim([-.05 1.05])
+                        ylim([-.05 1.05])
+                        title(['Trial #' num2str(itrial)])
+                        % constructing the u maze
+                        f_draw_umaze 
+                        if itrial == 1 && i== length(a)
+                            axP = get(gca,'Position');
+                            mice_str = cellstr(string(Mice_to_analyze)); 
+                            lg = legend(p1([1:length(Mice_to_analyze)]),mice_str,'Location','WestOutside');
+                            title(lg,'Mice')
+                            set(gca, 'Position', axP)
+                        end
                     end
                 end
 
 
-            subplot(2,4,itrial+4)
-                if length(Mice_to_analyze)>1
-                    [p_occ,h_occ, her_occ] = PlotErrorBarN_SL([Post_Occup_stim(:,itrial)*100 Post_Occup_nostim(:,itrial)*100],...
-                    'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'colorpoints',1,'optiontest','ttest','norm',0);
-                else
+            subplot(2,8,itrial+8)
+%                 if length(Mice_to_analyze)>1
+%                     [p_occ,h_occ, her_occ] = PlotErrorBarN_SL([Post_Occup_stim(:,itrial)*100 Post_Occup_nostim(:,itrial)*100],...
+%                     'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'colorpoints',1,'optiontest','ttest','norm',0);
+%                 else
                     [p_occ,h_occ, her_occ] = PlotErrorBarN_SL([Post_Occup_stim(:,itrial)*100 Post_Occup_nostim(:,itrial)*100],...
                     'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'paired',0, 'colorpoints',1);
-                end
+%                 end
                 h_occ.FaceColor = 'flat';
                 h_occ.CData(2,:) = [1 1 1];
-                set(gca,'Xtick',[1:2],'XtickLabel',{' Stim \newline zone ', ' No-stim \newline zone '});
-                set(gca, 'FontSize', 14);
-                set(gca, 'LineWidth', 1);
-                set(h_occ, 'LineWidth', 1);
-                set(her_occ, 'LineWidth', 1);
+                set(gca,'Xtick',[1:2],'XtickLabel',{'Stim', 'No-stim'});
+                xtickangle(45)
+                set(gca, 'FontSize', 12);
+                set(gca, 'LineWidth', 1.5);
+                set(h_occ, 'LineWidth', 1.5);
+                set(her_occ, 'LineWidth', 1.5);
                 ylabel('% time');
                 ylim([0 100])    
+                makepretty
         end
 
         if sav
             print([dir_out 'Behav_Post_per_Trial_ttest'], '-dpng', '-r300');
         end
-end        
-    
-
+end   
 
 % figure('Color',[1 1 1], 'render','painters','position',[10 10 1700 1000])
 %     % occupancy
@@ -1409,11 +1393,11 @@ end
 %---------------------------HEATMAPS - PRE VS POST-------------------------
 %--------------------------------------------------------------------------
 % set figures text format
-set(0,'defaulttextinterpreter','latex');
-set(0,'DefaultTextFontname', 'Arial')
-set(0,'DefaultAxesFontName', 'Arial')
-set(0,'defaultTextFontSize',14)
-set(0,'defaultAxesFontSize',14)
+% set(0,'defaulttextinterpreter','latex');
+% set(0,'DefaultTextFontname', 'Arial')
+% set(0,'DefaultAxesFontName', 'Arial')
+% set(0,'defaultTextFontSize',14)
+% set(0,'defaultAxesFontSize',14)
 if finalfig
     % calculate occupancy means
     x_pre_mean = squeeze(mean(mean(x_pre,1)));
@@ -1428,7 +1412,7 @@ if finalfig
         occHS_cond_mean = squeeze(mean(mean(occHS_Cond,1)));
     end
 
-    figure('Color',[1 1 1], 'render','painters','position',[10 10 1900 375])
+    figH.finalfig = figure('Color',[1 1 1], 'render','painters','position',[10 10 1900 375])
         % occupancy
         subplot(1,4,1)
             imagesc([1:320],[1:240],flip(squeeze(occHS_pre_mean))) 
@@ -1512,243 +1496,244 @@ if finalfig
                     print([dir_out 'finalbehav_prepost'], '-dpng', '-r600');
                 end
             end
-            
+end          
             
 %--------------------------------------------------------------------------
 %---------------------------HEATMAPS - STAT COMPARE------------------------
 %--------------------------------------------------------------------------
-% downscale the resolution of the maps 
-xx = [16];  % factor of downscaling (if multiple inputed will create one figure for each
-xorg = sizeMapx;
-yorg = sizeMapy;
-pre = occup_pre_glob;
-post = occup_post_glob;
-cond = occup_cond_glob;
-for iloop=1:length(xx)
-    occup_pre_arrred = [];
-    occup_post_arrred = [];
-    sizered = xx(iloop);
-    sizeMapy = ceil(yorg/sizered);
-    sizeMapx = ceil(xorg/sizered);
-    occup_pre_glob = blockproc(pre,[sizered sizered],fun);
-    occup_cond_glob = blockproc(cond,[sizered sizered],fun);
-    occup_post_glob = blockproc(post,[sizered sizered],fun);
-    for i=1:length(a)
-        occup_pre_arrred(i,:,:) = blockproc(squeeze(occup_pre_arr(i,:,:)),[sizered sizered],fun);
-        occup_post_arrred(i,:,:) = blockproc(squeeze(occup_post_arr(i,:,:)),[sizered sizered],fun);    
-    end
-    
-    %% ------  STATISTIQUES
-    if bts
-        bts_pre_tmp = []; bts_pre=[];
-        bts_post_tmp = []; bts_post=[];
-        p=[]; zval=[];
-        pre_tmp = reshape(occup_pre_arrred,length(a),[]);
-        post_tmp = reshape(occup_post_arrred,length(a),[]);
-
-        [bts_pre_tmp btsam_pre_tmp] = bootstrp(draws, @mean, pre_tmp);
-        [bts_post_tmp btsam_post_tmp] = bootstrp(draws, @mean, post_tmp);
-
-        bts_pre = reshape(bts_pre_tmp,draws,sizeMapy,sizeMapx);
-        bts_post = reshape(bts_post_tmp,draws,sizeMapy,sizeMapx);
-
-        %test with random sample
-        if ~(rnd)
-
-            if wilc
-                for ix=1:sizeMapx
-                    for iy=1:sizeMapy
-                        % ranksum - wilcoxon
-                        [p(iy,ix),h,stats(iy,ix)] = ranksum(bts_post(:,iy,ix),bts_pre(:,iy,ix));
-                        zval(iy,ix)=stats(iy,ix).zval;
-    %                     stats = mwwtest(bts_post(:,iy,ix)',bts_pre(:,iy,ix)');
-    %                     if stats.mr(1) < stats.mr(2)
-    %                         stats.Zsign = stats.Z*-1;
-    %                     else
-    %                         stats.Zsign = stats.Z;
-    %                     end
-    %                     p(iy,ix) = stats.Zsign;
-                    end
-                end
-            elseif tt
-                % T-Test
-                [h,p,ci,stats] = ttest2(bts_post,bts_pre);
-            end
-        else
-            ind_sel = randperm(length(Mice_to_analyze),length(Mice_to_analyze));
-            rnd_sel(1:floor(length(Mice_to_analyze)/2),:,:) = occup_pre_arr(ind_sel(1:floor(length(Mice_to_analyze)/2)),:,:);
-            rnd_sel(ceil(length(Mice_to_analyze)/2):length(Mice_to_analyze),:,:) = ...
-                occup_post_arr(ind_sel(ceil(length(Mice_to_analyze)/2)):length(Mice_to_analyze),:,:);
-            rnd_tmp = reshape(rnd_sel,length(a),[]);
-            [bts_rnd_tmp btsam_rnd_tmp] = bootstrp(draws, @mean, rnd_tmp);
-            bts_rnd = reshape(bts_rnd_tmp,draws,sizeMapy,sizeMapx); 
-            [h,p,ci,stats] = ttest2(bts_post,bts_rnd);
-
-        end
-    else
-        if wilc
-            % ranksum - wilcoxon
-    %         [p,h,stats] = ranksum(bts_post_w,bts_pre_w);
-        elseif tt
-            % T-Test
-             [h,p,ci,stats] = ttest(occup_post_arr,occup_pre_arr);
+if heatstat
+    % downscale the resolution of the maps 
+    xx = [16];  % factor of downscaling (if multiple inputed will create one figure for each
+    xorg = sizeMapx;
+    yorg = sizeMapy;
+    pre = occup_pre_glob;
+    post = occup_post_glob;
+    cond = occup_cond_glob;
+    for iloop=1:length(xx)
+        occup_pre_arrred = [];
+        occup_post_arrred = [];
+        sizered = xx(iloop);
+        sizeMapy = ceil(yorg/sizered);
+        sizeMapx = ceil(xorg/sizered);
+        occup_pre_glob = blockproc(pre,[sizered sizered],fun);
+        occup_cond_glob = blockproc(cond,[sizered sizered],fun);
+        occup_post_glob = blockproc(post,[sizered sizered],fun);
+        for i=1:length(a)
+            occup_pre_arrred(i,:,:) = blockproc(squeeze(occup_pre_arr(i,:,:)),[sizered sizered],fun);
+            occup_post_arrred(i,:,:) = blockproc(squeeze(occup_post_arr(i,:,:)),[sizered sizered],fun);    
         end
 
-    end
+        %% ------  STATISTIQUES
+        if bts
+            bts_pre_tmp = []; bts_pre=[];
+            bts_post_tmp = []; bts_post=[];
+            p=[]; zval=[];
+            pre_tmp = reshape(occup_pre_arrred,length(a),[]);
+            post_tmp = reshape(occup_post_arrred,length(a),[]);
 
-    sig_pix = [];
-    %Statistical correction
-    if fdr_corr
-        p_corr = mafdr(reshape(p,1,sizeMapy*sizeMapx));
-        p_corr = reshape(p_corr,1,sizeMapy,sizeMapx);
-        ind_p = find(p_corr<alpha);
-        sig_pix(1,sizeMapy,sizeMapx) = zeros;caxis([0 .1]);
-        sig_pix(ind_p) = 1;
-        icorr=2;
-    elseif bonfholm
-        [cor_p, h_bh]=bonf_holm(p,alpha);
-        sig_pix=h_bh;
-        icorr=3;
-    elseif bonf
-    %     ind_p = find(p<(alpha/length(p)^2));
-        ind_p = find(p<(alpha/((size(p,3)*size(p,2))-((sizeMapy*.75)*(sizeMapx*.342)))^2));   % alpha divided by the number of points SHOWN in the map
-        sig_pix(1,sizeMapy,sizeMapx) = zeros;
-        sig_pix(ind_p) = 1;
-        icorr=4;
-    else
-        sig_pix = h;
-        icorr=1;
-    end
+            [bts_pre_tmp btsam_pre_tmp] = bootstrp(draws, @mean, pre_tmp);
+            [bts_post_tmp btsam_post_tmp] = bootstrp(draws, @mean, post_tmp);
 
-    %---------------
-    if tt
-        tsig = stats.tstat.*sig_pix;
-    elseif wilc
-        tsig = zval.*squeeze(sig_pix);
-    end
+            bts_pre = reshape(bts_pre_tmp,draws,sizeMapy,sizeMapx);
+            bts_post = reshape(bts_post_tmp,draws,sizeMapy,sizeMapx);
 
-    %% Plot figures    
+            %test with random sample
+            if ~(rnd)
 
-    % Activity figure
-    supertit = ['Occupancy by session: ' num2str(sizered) 'x' num2str(sizered) ' bins'];
-    figure('Color',[1 1 1], 'rend','painters','pos',[10 10 1550 800],'Name',supertit)
-
-        subplot(2,6,1:2), imagesc(occup_pre_glob), axis xy
-            caxis([0 .08]);
-            t_str = 'Pre-tests';
-            title(t_str, 'FontSize', 13, 'interpreter','latex',...
-                    'HorizontalAlignment', 'center');
-            colormap(gca,'hot')
-    %         cb1=colorbar;
-    %         cb1.Location = 'westoutside';
-            set(gca,'xtick',[])
-            set(gca,'ytick',[])
-            hold on
-            %add visuals
-            f_draw_umaze2(sizeMapx,sizeMapy)
-
-        subplot(2,6,3:4), imagesc(occup_cond_glob), axis xy
-            caxis([0 .08]);
-            t_str = 'Conditioning'; 
-            title(t_str, 'FontSize', 13, 'interpreter','latex',...
-                    'HorizontalAlignment', 'center');
-            colormap(gca,'hot')
-            set(gca,'xtick',[])
-            set(gca,'ytick',[])  
-            hold on
-            %add visuals
-            f_draw_umaze2(sizeMapx,sizeMapy)
-
-        subplot(2,6,5:6), imagesc(occup_post_glob), axis xy
-            caxis([0 .08]);
-            t_str = 'Post-tests'; 
-            title(t_str, 'FontSize', 13, 'interpreter','latex',...
-                    'HorizontalAlignment', 'center');
-            colormap(gca,'hot')
-            set(gca,'xtick',[])
-            set(gca,'ytick',[])  
-            hold on
-            %add visuals
-            f_draw_umaze2(sizeMapx,sizeMapy)
-
-
-        subplot(2,6,8:9), imagesc(squeeze(tsig)), axis xy
-            caxis([-1*max(max(squeeze(tsig))) max(max(squeeze(tsig)))]);
-            t_str = {'Significant changes'; 'in occupancy post- vs pre-tests'}; 
-            title(t_str, 'FontSize', 13, 'interpreter','latex',...
-                    'HorizontalAlignment', 'center');
-
-            set(gca,'xtick',[])
-            set(gca,'ytick',[])
-            colormap(gca, bluewhitered)
-    %         cb3 = colorbar;
-            hold on
-            %add visuals
-            f_draw_umaze2(sizeMapx,sizeMapy)
-
-            %*-------------
-            % stim zone only
-            %*-------------
-            
-%          voidtmp = nan(5,1);    
-%         subplot(2,6,10:11)
-%             [p_occ,h_occ, her_occ] = PlotErrorBarN_DB([Pre_Occup_stim_mean*100  Cond_Occup_stim_mean*100 Post_Occup_stim_mean*100],...
-%                 'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
-%             set(gca,'Xtick',[1:3],'XtickLabel',{'Pre','Cond','Post',});
-%             set(gca, 'FontSize', 12);
-%             set(gca, 'LineWidth', 1);
-%             set(h_occ, 'LineWidth', 1);
-%             set(her_occ, 'LineWidth', 1);
-%             ylabel('% time');
-%             ylim([0 85])
-%             t_str = {'Time spent in stim zone by session'};
-%             title(t_str, 'FontSize', 14, 'interpreter','latex',...
-%              'HorizontalAlignment', 'center'); 
-         
-            %*-------------
-            % stim + no-stim zones
-            %*-------------
-
-        voidtmp = nan(length(Dir.path),1);    
-        subplot(2,6,10:11)
-            [p_occ,h_occ, her_occ] = PlotErrorBarN_DB([Pre_Occup_stim_mean*100 Pre_Occup_nostim_mean*100 voidtmp  Cond_Occup_stim_mean*100 Cond_Occup_nostim_mean*100 voidtmp Post_Occup_stim_mean*100 Post_Occup_nostim_mean*100],...
-                'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
-            set(gca,'Xtick',[1:8],'XtickLabel',{'        Pre', '','',...
-                '        Cond', '','', ...
-                '        Post', ''});
-            h_occ.FaceColor = 'flat';
-            h_occ.CData(2,:) = [1 1 1];
-            h_occ.CData(5,:) = [1 1 1];
-            h_occ.CData(8,:) = [1 1 1];
-            set(gca, 'FontSize', 12);
-            set(gca, 'LineWidth', 1);
-            set(h_occ, 'LineWidth', 1);
-            set(her_occ, 'LineWidth', 1);
-            ylabel('% time');
-            ylim([0 85])
-            t_str = {'Time spent in zones by session'};
-            title(t_str, 'FontSize', 14, 'interpreter','latex',...
-             'HorizontalAlignment', 'center'); 
-            % creating legend with hidden-fake data (hugly but effective)
-                b2=bar([-2],[ 1],'FaceColor','flat');
-                b1=bar([-3],[ 1],'FaceColor','flat');
-                b1.CData(1,:) = repmat([0 0 0],1);
-                b2.CData(1,:) = repmat([1 1 1],1);
-                legend([b1 b2],{'Stim','No-stim'})
-
-        if sav
-            if bts
                 if wilc
-                    print([dir_out 'OccComparePost-Pre_bts_' corr{icorr} '_ranksum'], '-dpng', '-r600');
+                    for ix=1:sizeMapx
+                        for iy=1:sizeMapy
+                            % ranksum - wilcoxon
+                            [p(iy,ix),h,stats(iy,ix)] = ranksum(bts_post(:,iy,ix),bts_pre(:,iy,ix));
+                            zval(iy,ix)=stats(iy,ix).zval;
+        %                     stats = mwwtest(bts_post(:,iy,ix)',bts_pre(:,iy,ix)');
+        %                     if stats.mr(1) < stats.mr(2)
+        %                         stats.Zsign = stats.Z*-1;
+        %                     else
+        %                         stats.Zsign = stats.Z;
+        %                     end
+        %                     p(iy,ix) = stats.Zsign;
+                        end
+                    end
                 elseif tt
-                    print([dir_out 'OccComparePost-Pre_bts_' corr{icorr} '_ttest'], '-dpng', '-r900');
+                    % T-Test
+                    [h,p,ci,stats] = ttest2(bts_post,bts_pre);
                 end
             else
-                print([dir_out 'OccComparePost-Pre_' corr{icorr}], '-dpng', '-r900');
+                ind_sel = randperm(length(Mice_to_analyze),length(Mice_to_analyze));
+                rnd_sel(1:floor(length(Mice_to_analyze)/2),:,:) = occup_pre_arr(ind_sel(1:floor(length(Mice_to_analyze)/2)),:,:);
+                rnd_sel(ceil(length(Mice_to_analyze)/2):length(Mice_to_analyze),:,:) = ...
+                    occup_post_arr(ind_sel(ceil(length(Mice_to_analyze)/2)):length(Mice_to_analyze),:,:);
+                rnd_tmp = reshape(rnd_sel,length(a),[]);
+                [bts_rnd_tmp btsam_rnd_tmp] = bootstrp(draws, @mean, rnd_tmp);
+                bts_rnd = reshape(bts_rnd_tmp,draws,sizeMapy,sizeMapx); 
+                [h,p,ci,stats] = ttest2(bts_post,bts_rnd);
+
             end
-        end        
+        else
+            if wilc
+                % ranksum - wilcoxon
+        %         [p,h,stats] = ranksum(bts_post_w,bts_pre_w);
+            elseif tt
+                % T-Test
+                 [h,p,ci,stats] = ttest(occup_post_arr,occup_pre_arr);
+            end
+
+        end
+
+        sig_pix = [];
+        %Statistical correction
+        if fdr_corr
+            p_corr = mafdr(reshape(p,1,sizeMapy*sizeMapx));
+            p_corr = reshape(p_corr,1,sizeMapy,sizeMapx);
+            ind_p = find(p_corr<alpha);
+            sig_pix(1,sizeMapy,sizeMapx) = zeros;caxis([0 .1]);
+            sig_pix(ind_p) = 1;
+            icorr=2;
+        elseif bonfholm
+            [cor_p, h_bh]=bonf_holm(p,alpha);
+            sig_pix=h_bh;
+            icorr=3;
+        elseif bonf
+        %     ind_p = find(p<(alpha/length(p)^2));
+            ind_p = find(p<(alpha/((size(p,3)*size(p,2))-((sizeMapy*.75)*(sizeMapx*.342)))^2));   % alpha divided by the number of points SHOWN in the map
+            sig_pix(1,sizeMapy,sizeMapx) = zeros;
+            sig_pix(ind_p) = 1;
+            icorr=4;
+        else
+            sig_pix = h;
+            icorr=1;
+        end
+
+        %---------------
+        if tt
+            tsig = stats.tstat.*sig_pix;
+        elseif wilc
+            tsig = zval.*squeeze(sig_pix);
+        end
+
+        %% Plot figures    
+
+        % Activity figure
+        supertit = ['Occupancy by session: ' num2str(sizered) 'x' num2str(sizered) ' bins'];
+        figH.heatstat = figure('Color',[1 1 1], 'rend','painters','pos',[10 10 1550 800],'Name',supertit)
+
+            subplot(2,6,1:2), imagesc(occup_pre_glob), axis xy
+                caxis([0 .08]);
+                t_str = 'Pre-tests';
+                title(t_str, 'FontSize', 13, 'interpreter','latex',...
+                        'HorizontalAlignment', 'center');
+                colormap(gca,'hot')
+        %         cb1=colorbar;
+        %         cb1.Location = 'westoutside';
+                set(gca,'xtick',[])
+                set(gca,'ytick',[])
+                hold on
+                %add visuals
+                f_draw_umaze2(sizeMapx,sizeMapy)
+
+            subplot(2,6,3:4), imagesc(occup_cond_glob), axis xy
+                caxis([0 .08]);
+                t_str = 'Conditioning'; 
+                title(t_str, 'FontSize', 13, 'interpreter','latex',...
+                        'HorizontalAlignment', 'center');
+                colormap(gca,'hot')
+                set(gca,'xtick',[])
+                set(gca,'ytick',[])  
+                hold on
+                %add visuals
+                f_draw_umaze2(sizeMapx,sizeMapy)
+
+            subplot(2,6,5:6), imagesc(occup_post_glob), axis xy
+                caxis([0 .08]);
+                t_str = 'Post-tests'; 
+                title(t_str, 'FontSize', 13, 'interpreter','latex',...
+                        'HorizontalAlignment', 'center');
+                colormap(gca,'hot')
+                set(gca,'xtick',[])
+                set(gca,'ytick',[])  
+                hold on
+                %add visuals
+                f_draw_umaze2(sizeMapx,sizeMapy)
+
+
+            subplot(2,6,8:9), imagesc(squeeze(tsig)), axis xy
+                caxis([-1*max(max(squeeze(tsig))) max(max(squeeze(tsig)))]);
+                t_str = {'Significant changes'; 'in occupancy post- vs pre-tests'}; 
+                title(t_str, 'FontSize', 13, 'interpreter','latex',...
+                        'HorizontalAlignment', 'center');
+
+                set(gca,'xtick',[])
+                set(gca,'ytick',[])
+                colormap(gca, bluewhitered)
+        %         cb3 = colorbar;
+                hold on
+                %add visuals
+                f_draw_umaze2(sizeMapx,sizeMapy)
+
+                %*-------------
+                % stim zone only
+                %*-------------
+
+    %          voidtmp = nan(5,1);    
+    %         subplot(2,6,10:11)
+    %             [p_occ,h_occ, her_occ] = PlotErrorBarN_DB([Pre_Occup_stim_mean*100  Cond_Occup_stim_mean*100 Post_Occup_stim_mean*100],...
+    %                 'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
+    %             set(gca,'Xtick',[1:3],'XtickLabel',{'Pre','Cond','Post',});
+    %             set(gca, 'FontSize', 12);
+    %             set(gca, 'LineWidth', 1);
+    %             set(h_occ, 'LineWidth', 1);
+    %             set(her_occ, 'LineWidth', 1);
+    %             ylabel('% time');
+    %             ylim([0 85])
+    %             t_str = {'Time spent in stim zone by session'};
+    %             title(t_str, 'FontSize', 14, 'interpreter','latex',...
+    %              'HorizontalAlignment', 'center'); 
+
+                %*-------------
+                % stim + no-stim zones
+                %*-------------
+
+            voidtmp = nan(length(Dir.path),1);    
+            subplot(2,6,10:11)
+                [p_occ,h_occ, her_occ] = PlotErrorBarN_DB([Pre_Occup_stim_mean*100 Pre_Occup_nostim_mean*100 voidtmp  Cond_Occup_stim_mean*100 Cond_Occup_nostim_mean*100 voidtmp Post_Occup_stim_mean*100 Post_Occup_nostim_mean*100],...
+                    'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
+                set(gca,'Xtick',[1:8],'XtickLabel',{'        Pre', '','',...
+                    '        Cond', '','', ...
+                    '        Post', ''});
+                h_occ.FaceColor = 'flat';
+                h_occ.CData(2,:) = [1 1 1];
+                h_occ.CData(5,:) = [1 1 1];
+                h_occ.CData(8,:) = [1 1 1];
+                set(gca, 'FontSize', 12);
+                set(gca, 'LineWidth', 1);
+                set(h_occ, 'LineWidth', 1);
+                set(her_occ, 'LineWidth', 1);
+                ylabel('% time');
+                ylim([0 85])
+                t_str = {'Time spent in zones by session'};
+                title(t_str, 'FontSize', 14, 'interpreter','latex',...
+                 'HorizontalAlignment', 'center'); 
+                % creating legend with hidden-fake data (hugly but effective)
+                    b2=bar([-2],[ 1],'FaceColor','flat');
+                    b1=bar([-3],[ 1],'FaceColor','flat');
+                    b1.CData(1,:) = repmat([0 0 0],1);
+                    b2.CData(1,:) = repmat([1 1 1],1);
+                    legend([b1 b2],{'Stim','No-stim'})
+
+            if sav
+                if bts
+                    if wilc
+                        print([dir_out 'OccComparePost-Pre_bts_' corr{icorr} '_ranksum'], '-dpng', '-r600');
+                    elseif tt
+                        print([dir_out 'OccComparePost-Pre_bts_' corr{icorr} '_ttest'], '-dpng', '-r900');
+                    end
+                else
+                    print([dir_out 'OccComparePost-Pre_' corr{icorr}], '-dpng', '-r900');
+                end
+            end        
+    end
 end
-end    
     
     
 
