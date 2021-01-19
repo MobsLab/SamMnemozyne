@@ -33,7 +33,7 @@
 %% TODO:  - divide power for OB (FindStrongOsc)
 
 
-function [MatInfoNeurons, BasicNeuronInfo] = CalcBasicNeuronInfo(Dir, ploto)
+function [MatInfoNeurons, BasicNeuronInfo] = CalcBasicNeuronInfo_SL(Dir, ploto)
 %% Parameters
 
 % Folders with data
@@ -143,6 +143,8 @@ if exist('NeuronClassification.mat')~=2
     saveas(figid,'NeuronClasses.fig');
     saveFigure(figid,'NeuronClasses',pwd);
     close(figid);
+else
+    load('NeuronClassification.mat');
 end
 
 % Calculate theta modulation for each unit
@@ -218,7 +220,11 @@ end
 
 % Calculate response to ripples
 for i=1:length(S)
-    [CC_neurip(i,:),BT_neurip(i,:)]=CrossCorr(ripples(:,2)*1e4,Range(S{i}),1,300);
+    try 
+        [CC_neurip(i,:),BT_neurip(i,:)]=CrossCorr(ripples(:,2)*1e4,Range(S{i}),1,300);
+    catch
+        [CC_neurip(i,:),BT_neurip(i,:)]=CrossCorr(Ripples(:,2)*1e4,Range(S{i}),1,300);
+    end
 end
 
 
