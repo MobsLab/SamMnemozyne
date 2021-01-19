@@ -55,7 +55,20 @@ sesscond = {'Cond1','Cond2','Cond3','Cond4','Cond5','Cond6','Cond7','Cond8'};
 
 %% Get Data
 for i = 1:length(Dir.path)
-    Rip{i} = load([Dir.path{i}{1} 'Ripples.mat'], 'ripples','dHPC_rip');
+    load([Dir.path{i}{1} 'Ripples.mat'], 'ripples','dHPC_rip');
+    if exist('ripples','var')
+        if exist('dHPC_rip','var') 
+            Rip{i} = load([Dir.path{i}{1} 'Ripples.mat'], 'ripples','dHPC_rip');
+        else
+            load([Dir.path{i}{1} 'Ripples.mat'], 'ripples','ripples_Info');
+            Rip{i}.ripples = ripples;
+            Rip{i}.dHPC_rip = ripples_Info.channel;
+        end
+    else
+        load([Dir.path{i}{1} 'Ripples.mat'], 'Ripples','ripples_Info');
+        Rip{i}.ripples = Ripples;
+        Rip{i}.dHPC_rip = ripples_Info.channel;
+    end
     a{i} = load([Dir.path{i}{1} '/behavResources.mat'], 'behavResources', 'SessionEpoch', 'ZoneEpoch','FreezeAccEpoch','CleanVtsd');
 end
 
@@ -333,7 +346,7 @@ p_VZmean_pre_post = signrank(Pre_VZmean_mean, Post_VZmean_mean);
 %% Prepare intervalSets for ripples
 for isuj=1:length(Dir.path)
     % Locomotion threshold
-    LocomotionEpoch = thresholdIntervals(tsd(Range(a{isuj}.CleanVtsd),movmedian(Data(a{i}.CleanVtsd),5)) ...
+    LocomotionEpoch = thresholdIntervals(tsd(Range(a{isuj}.CleanVtsd),movmedian(Data(a{isuj}.CleanVtsd),5)) ...
         ,mvtthr,'Direction',thrdir);
     
     for itrial=1:lnpre(isuj)
@@ -749,6 +762,8 @@ set(0,'DefaultTextFontname', 'Arial')
 set(0,'DefaultAxesFontName', 'Arial')
 set(0,'defaultAxesFontSize',14)
 
+
+
 %--------------------------------------------------------------------------
 %                 ripples u-maze location  
 %--------------------------------------------------------------------------
@@ -758,6 +773,11 @@ clrs_default(end+1,1:3) = [0 0 0];
 % colororder(clrs_default);
 
 for i=1:length(Dir.path)
+    
+    % ripple number
+    nrip(i,1) = length(Restrict(ripplesPeak{i},IS_TestPre{i}));  
+    nrip(i,2) = length(Restrict(ripplesPeak{i},IS_TestPost{i})); 
+    nrip(i,3) = length(Restrict(ripplesPeak{i},IS_Cond{i}));   
     supertit = ['Mouse ' num2str(subj(i))  ' - Ripple '];
     figure('Color',[1 1 1], 'rend','painters','pos',[1 1 1800 500],'Name', supertit, 'NumberTitle','off')
         
@@ -782,7 +802,7 @@ for i=1:length(Dir.path)
             axis off
             xlim([-0.05 1.05])    
             ylim([-0.05 1.05])
-            title(['Pre-tests (N=' num2str(nrip(1)) ')']) 
+            title(['Pre-tests (N=' num2str(nrip(i,1)) ')']) 
             % constructing the u maze
             f_draw_umaze
 %             %legend (make legend outside of plot and subplot!)
@@ -812,7 +832,7 @@ for i=1:length(Dir.path)
             axis off
             xlim([-0.05 1.05])    
             ylim([-0.05 1.05])
-            title(['Cond (N=' num2str(nrip(2)) ')']) 
+            title(['Cond (N=' num2str(nrip(i,3)) ')']) 
             % constructing the u maze
             f_draw_umaze  
         
@@ -838,7 +858,7 @@ for i=1:length(Dir.path)
             axis off
             xlim([-0.05 1.05])    
             ylim([-0.05 1.05])
-            title(['Post-tests (N=' num2str(nrip(3)) ')'])  
+            title(['Post-tests (N=' num2str(nrip(i,2)) ')'])  
             % constructing the u maze
             f_draw_umaze
             
@@ -996,10 +1016,6 @@ for i=1:length(a)
     LFPf=FilterLFP(LFP_rip.LFP,[120 220],1048);
     LFPr=LFP_rip.LFP;
     rmvt = Restrict(ripplesPeak{i},or(or(IS_TestPre{i},IS_Cond{i}),IS_TestPost{i}));
-    % ripple number
-    nrip(1) = length(Restrict(ripplesPeak{i},IS_TestPre{i}));  
-    nrip(2) = length(Restrict(ripplesPeak{i},IS_TestPost{i})); 
-    nrip(3) = length(Restrict(ripplesPeak{i},IS_Cond{i}));   
     
     % Plot Raw stuff
     [M,T]=PlotRipRaw(LFPr,Data(rmvt)/1E4, [-60 60]);
@@ -1021,20 +1037,18 @@ for i=1:length(a)
         %- save picture
         if sav
             print([dir_out 'M' num2str(subj(i)) '_task_average_ripple.png'], '-dpng', '-r600');
-        end
-end    
+        end  
 %--------------------------------------------------------------------------
 %                    Global figure	
 %--------------------------------------------------------------------------
 
-for i=1:length(Dir.path)
     supertit = ['GLOBAL FIGURE: Mouse ' num2str(subj(i))  ' - Ripple '];
     figure('Color',[1 1 1], 'rend','painters','pos',[1 1 1200 700],'Name', supertit, 'NumberTitle','off')
         subplot(2,3,1:2)
             shadedErrorBar([],M(:,2),M(:,3),'-b',1);
             xlabel('Time (ms)')
             ylabel('$${\mu}$$V')   
-            title(['M' num2str(subj(i)) ' - Average ripple (N=' num2str(length(rmvt)) ')']);      
+            title(['M' num2str(subj(i)) ' - Average ripple (N=' num2str(sum(nrip(i,:))) ')']);      
             xlim([1 size(M,1)])
             set(gca, 'Xtick', 1:25:size(M,1),...
                         'Xticklabel', num2cell([floor(M(1,1)*1000):20:ceil(M(end,1)*1000)]))
@@ -1060,7 +1074,7 @@ for i=1:length(Dir.path)
             axis off
             xlim([-0.05 1.05])    
             ylim([-0.05 1.05])
-            title(['Pre-tests (N=' num2str(nrip(1)) ')'])
+            title(['Pre-tests (N=' num2str(nrip(i,1)) ')'])
             % constructing the u maze
             f_draw_umaze
 %             %legend (make legend outside of plot and subplot!)
@@ -1090,7 +1104,7 @@ for i=1:length(Dir.path)
             axis off
             xlim([-0.05 1.05])    
             ylim([-0.05 1.05])
-            title(['Cond (N=' num2str(nrip(2)) ')'])   
+            title(['Cond (N=' num2str(nrip(i,3)) ')'])   
             % constructing the u maze
             f_draw_umaze  
         
@@ -1116,7 +1130,7 @@ for i=1:length(Dir.path)
             axis off
             xlim([-0.05 1.05])    
             ylim([-0.05 1.05])
-            title(['Post-tests (N=' num2str(nrip(3)) ')'])   
+            title(['Post-tests (N=' num2str(nrip(i,2)) ')'])   
             % constructing the u maze
             f_draw_umaze
             
