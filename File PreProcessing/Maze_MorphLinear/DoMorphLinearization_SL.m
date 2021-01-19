@@ -8,7 +8,7 @@ for isess = 1:length(sess)
     FindBehav = dir(fullfile(pwd, '**', 'behavResources.*')); %find behavioral folder
     cd(FindBehav.folder); %switch to behavioral folder
     outPath = FindBehav.folder;
-    
+    disp(['Processing' sess{isess}]);
     % Morphing
     load('behavResources.mat','AlignedXtsd');
     if ~exist('AlignedXtsd','var')
