@@ -1,31 +1,36 @@
 function sleep_details(varargin)
 %==========================================================================
-% Details: Output details about sleep session
+% Details: Output details about sleep session.
+%            - figure including (handle is not outputed):
+%               - Neurons
+%               - Sleep scoring plot, curves, stage duration
+%               - Hypnogram
+%               - mean lfp on delta waves
+%               - mean ripples
+%               - mean spindles
 %
 % INPUTS:
+%       VARARGINs:
 %       - stim          If stimulations are to be taken off the signal (0 or 1)
 %       - recompute     Recompute events (0 or 1)
 %       - down          Detect down states (default: 0). Need PFC neurons. 
 %       - delta         Detect delta waves (default: 1). Need PFC channel. 
 %       - rip           Detect ripples (default: 1). Need HPC rip channel.
 %       - spindle       Detect spindles (default: 1). Need PFC spindle channel.
-%       - ripthresh     Ripple thresholds (default: [5 7])
-%       - nonrip        Channel without ripples (ideally from HPC)
+%       - ripthresh     Ripple thresholds (default: [4 6;2 5])
+%                               1st: thresh for absolute detection   [4 6]
+%                               2nd: thresh for rootsquare detection [2 5]
+%       - substages     Compute substaging (N1,N2,N3). Proper signal on PFC
+%                       (presence of delta and spindles) is necessary.
+%       - idfig         output ID figures
 % 
 % OUTPUT:
-%       - figure including:
-%           - Neurons
-%           - Sleep scoring plot, curves, stage duration
-%           - Hypnogram
-%           - mean lfp on delta waves
-%           - mean ripples
-%           - mean spindles
 %
 % NOTES:
-%       - Without LFP in PFC cannot run this script right now
 %
 %   Written by Samuel Laventure - 02-07-2019
 %   Updated 2020-11 SL 
+%   Updated 2021-01 SL - added conditions, fixed ripples pipeline
 %      
 %  see also, FindNREMfeatures, SubstagesScoring, MakeIDSleepData,PlotIDSleepData
 %==========================================================================
@@ -71,10 +76,15 @@ for i = 1:2:length(varargin)
             if ~isnumeric(ripthresh)
                 error('Incorrect value for property ''ripthresh''.');
             end
-        case 'nonrip'
-            nonRip = varargin{i+1};
-            if ~isnumeric(nonRip)
-                error('Incorrect value for property ''nonRip''.');
+        case 'substages'
+            substages = varargin{i+1};
+            if substages~=0 && substages ~=1
+                error('Incorrect value for property ''substages''.');
+            end
+        case 'idfig'
+            idfig = varargin{i+1};
+            if idfig~=0 && idfig ~=1
+                error('Incorrect value for property ''idfig''.');
             end
         otherwise
             error(['Unknown property ''' num2str(varargin{i}) '''.']);
@@ -103,7 +113,14 @@ if ~exist('spindle','var')
     spindle=1;
 end
 if ~exist('ripthresh','var')
-    ripthresh=[5 7];
+    % [absolute detection; rootsquare det.]
+    ripthresh=[4 6; 2 5]; 
+end
+if ~exist('substages','var')
+    substages=1;
+end
+if ~exist('idfig','var')
+    idfig=1;
 end
 
 
@@ -124,33 +141,34 @@ if stim
     end
 end
 
-
 %% Sleep event
-disp('getting sleep signals')
-CreateSleepSignalsSL('recompute',recompute,'scoring','ob','stim',1, ...
+disp('Detecting sleep events')
+disp(' ')
+CreateSleepSignals('recompute',recompute,'scoring','accelero','stim',stim, ...
     'down',down,'delta',delta,'rip',rip,'spindle',spindle, ...
     'ripthresh',ripthresh);
 
-
 %% Substages
-disp('getting sleep stages')
-[featuresNREM, Namesfeatures, EpochSleep, NoiseEpoch, scoring] = FindNREMfeatures('scoring','ob');
-save('FeaturesScoring', 'featuresNREM', 'Namesfeatures', 'EpochSleep', 'NoiseEpoch', 'scoring')
-[Epoch, NameEpoch] = SubstagesScoring(featuresNREM, NoiseEpoch,'burstis3',1,'removesi',1,'newburstthresh',1);
-save('SleepSubstages', 'Epoch', 'NameEpoch')
+if substages
+    disp('getting sleep stages')
+    [featuresNREM, Namesfeatures, EpochSleep, NoiseEpoch, scoring] = FindNREMfeatures('scoring','ob');
+    save('FeaturesScoring', 'featuresNREM', 'Namesfeatures', 'EpochSleep', 'NoiseEpoch', 'scoring')
+    [Epoch, NameEpoch] = SubstagesScoring(featuresNREM, NoiseEpoch,'burstis3',1,'removesi',1,'newburstthresh',1);
+    save('SleepSubstages', 'Epoch', 'NameEpoch')
+end
 
 %% GLOBAL FIGURES
+if idfig
+    % Id figure 1
+    disp('making ID fig1')
+    MakeIDSleepData('recompute',recompute)
+    PlotIDSleepData
+    print([pathOut 'SleepGlobalDetails'], '-dpng', '-r300');
 
-%% Id figure 1
-disp('making ID fig1')
-MakeIDSleepData('recompute',recompute)
-PlotIDSleepData
-print([pathOut 'SleepGlobalDetails'], '-dpng', '-r300');
-
-%% Id figure 2
-MakeIDSleepData2('scoring','ob','recompute',1)
-PlotIDSleepData2
-print([pathOut 'DeltaGlobalDetails'], '-dpng', '-r300');
-
+    % Id figure 2
+    MakeIDSleepData2('scoring','ob','recompute',1)
+    PlotIDSleepData2
+    print([pathOut 'DeltaGlobalDetails'], '-dpng', '-r300');
+end
 end
 
