@@ -1,5 +1,4 @@
 function DoMorphLinearization_SL(sess)
-%%%% LinearizeTrack_SL
 
 Dir = pwd;
 
@@ -13,7 +12,7 @@ for isess = 1:length(sess)
     load('behavResources.mat','AlignedXtsd');
     if ~exist('AlignedXtsd','var')
         % Align
-        load behavResources.mat
+        load behavResources.mat  
         [AlignedXtsd,AlignedYtsd,ZoneEpochAligned,XYOutput] = MorphMazeToSingleShape_SL(Xtsd,Ytsd,...
             Zone{1},ref,Ratio_IMAonREAL);
         save('behavResources.mat', 'AlignedXtsd', 'AlignedYtsd', 'ZoneEpochAligned', 'XYOutput',  '-append');
@@ -50,6 +49,7 @@ for isess = 1:length(sess)
         LinearDist=tsd(Range(Xtsd),t);
 
         save('behavResources.mat', 'LinearDist','-append');
+        close all
     else
         disp('Linear config already done.');
     end
