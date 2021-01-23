@@ -34,7 +34,7 @@ for i = 1:2:length(varargin)
         case 'measure'
             measure = varargin{i+1};
             cmeasure = 1;
-            if ~isstring(measure)
+            if ~ischar(measure)
                 error('Incorrect value for property ''measure''. Measure must be a string.');            
             end
          case 'ntrial'
@@ -75,8 +75,8 @@ for isuj = 1:length(workpath.path)
     % Get behav data
     if cmeasure
         disp('   .extracting behavioral data')
-        if isfield(behav{isuj}.behavResources(id_sess{isuj}),measure)
-            dat{isuj,1} = extractfield(behav{isuj}.behavResources(id_sess{isuj}),measure);
+        if isfield(behav{isuj}.behavResources(id_sess{isuj}{1}),measure)
+            dat{isuj,1} = extractfield(behav{isuj}.behavResources(id_sess{isuj}{1}),measure);
         elseif isfield(behav{isuj}.behavResources(id_sess{isuj}),[measure num2str(ntrial)]) %check if the last increment of this session exist
             for itrial=1:ntrial
                 if isfield(behav{isuj}.behavResources(id_sess{isuj}),[measure num2str(itrial)])
