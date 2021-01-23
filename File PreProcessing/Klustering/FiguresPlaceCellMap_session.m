@@ -72,7 +72,7 @@ end
 nsess=length(session);
 
 %saving all trajectories maps parameters
-dirPath = [pwd '/PlaceCells/' date '/' ];
+dirPath = [pwd '/PlaceCells/' cell2mat(session) '_' date '/' ];
 figName = 'All_traj';
 sformat = 'dpng';
 res = 300;
@@ -103,8 +103,13 @@ load('SpikeData.mat');
 LocomotionEpoch = thresholdIntervals(Vtsd,5,'Direction', 'Above');
 hist(Data(Vtsd), 100)
 
-XS = Restrict(AlignedXtsd,LocomotionEpoch);
-YS = Restrict(AlignedYtsd,LocomotionEpoch);
+if ~isnan(sum(Data(AlignedXtsd)))
+    XS = Restrict(AlignedXtsd,LocomotionEpoch);
+    YS = Restrict(AlignedYtsd,LocomotionEpoch);
+else
+    XS = Restrict(Xtsd,LocomotionEpoch);
+    YS = Restrict(Ytsd,LocomotionEpoch);
+end
 
 %set number of clu by tetrode
 cluarr = cell2mat(TT);
@@ -118,10 +123,6 @@ end
 
 % Pooling sessions
 if pooled % pooled sessions
-    % create dir
-    if ~exist([pwd '/PlaceCells/' cell2mat(session) date '/'],'dir')
-        mkdir([pwd '/PlaceCells/' cell2mat(session) date '/']);
-    end
     % pooling
     for isess=1:nsess
         if isess==1
@@ -219,6 +220,7 @@ else  % individual sessions
                     print([pwd '/PlaceCells/' session{isess} '/' cellnames{i} ], '-dpng', '-r300'); %
                 end
             catch
+                map{i} = [];
                 disp(['No map available for ' cellnames{i}]);
             end
         end
