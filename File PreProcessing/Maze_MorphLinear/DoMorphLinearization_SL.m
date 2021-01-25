@@ -53,7 +53,7 @@ for isess = 1:length(sess)
     else
         disp('Linear config already done.');
     end
-    clear LinearDist;
+    clear LinearDist AlignedXtsd
     cd(Dir) 
 end
 end
