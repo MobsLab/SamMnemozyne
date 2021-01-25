@@ -1,4 +1,4 @@
-function BehaviorERC_SL_8trials(expe,Mice_to_analyze)
+function [figH_ind figH] = BehaviorERC_SL_8trials(expe,Mice_to_analyze)
 %BehaviorERC - Plot basic behavior comparisons of ERC experiment avergaed across mice.
 %
 % Plot occupance in the shock zone in the PreTests vs PostTests
@@ -25,33 +25,22 @@ function BehaviorERC_SL_8trials(expe,Mice_to_analyze)
 rmpath([dropbox '\DataSL\Matlab_scripts\working functions\generic\eeglab\sccn-eeglab-e35d7ab\functions\miscfunc\']);
 
 %% Parameters
-% expe = 'StimMFBWake';
-% Directory to save and name of the figure to save
-% dir_out = '/home/mobs/Dropbox/DataSL/StimMFBREM/Behavior/';
-% dir_out = '/home/mobs/Dropbox/DataSL/Reversal/Behavior/';
-%dir_out = ['/home/mobs/Dropbox/DataSL/' expe '/Behavior/' date '/'];
-dir_out = [dropbox '/DataSL/' expe '/Behavior/' date '/'];
-
-%set folders
-if ~exist(dir_out,'dir')
-    mkdir(dir_out);
-end
-
 
 %-------------- RUNNNING PARAMETERS -----------
 old = 0;
 sav = 1;
-ntrial_prepost = 8;   % number of trial to show in figures whether it is classic # or more. 
+ntrial_prepost = 4;   % number of trial to show in figures whether it is classic # or more. 
+fixtrial = 0;  % change number of trial to process see var ntrial_prepost
 
 %-------------- CHOOSE FIGURE TO OUTPUT ----------
 % per mouse
-trajdyn = 0; % Trajectories + barplot + zone dynamics 
-firstentry = 0; % 1st entry barplot per mouse
-trajoccup = 0; % trajectories and mean occupancy
+trajdyn = 1; % Trajectories + barplot + zone dynamics 
+firstentry = 1; % 1st entry barplot per mouse
+trajoccup = 1; % trajectories and mean occupancy
 
 globalstats = 0; % global statistiques (not complete)
 heatmaps = 0; % heatmaps all mice
-traj_all = 1; %trajectories all mice
+traj_all = 0; %trajectories all mice
 finalfig = 0;
 heatstat = 0;
 
@@ -68,6 +57,8 @@ sizeMap=50;         %Map size
 
 %------------- FIGURE PARAMETERS -------------
 clrs = {'ko', 'bo', 'ro','go', 'co', 'mo'; 'k','r','b','m','g','c'; 'kp', 'bp', 'rp', 'gp', 'cp', 'mp'};
+figH_ind = [];
+figH = [];
 
 %------------- VAR INIT -------------
 OccupMap_pre = zeros(101,101);
@@ -89,7 +80,8 @@ OccupMap_post = zeros(101,101);
     corr = {'uncorr','fdr','bonfholm','bonf'};
 % statisical analyses
 wilc = 1;   %ranksum/wilcoxon
-tt = 0;     %ttest2
+tt = 0;   
+          %ttest2
 %Map parameter
 freqVideo=15;       %frame rate
 smo=4;            %smoothing factor
@@ -151,13 +143,20 @@ for i=1:length(a)
     end
     id_Pre{i}=find(id_Pre{i});
     id_Post{i}=find(id_Post{i});
-    % get nbr of cond trial
-    nbprepost(i) = length(id_Pre{i});
     if cond
         id_Cond{i}=find(id_Cond{i});
         % get nbr of cond trial
         nbcond{i} = length(id_Cond{i});
     end
+    if fixtrial
+        id_Pre{i} = id_Pre{i}(1:ntrial_prepost);
+        id_Post{i} = id_Post{i}(1:ntrial_prepost);
+        nbprepost(i) = ntrial_prepost;
+    else
+        % get nbr of cond trial
+        nbprepost(i) = length(id_Pre{i});
+    end
+    
 end
 
 %% Calculate average occupancy
@@ -401,7 +400,7 @@ trajzone_post{length(a),8}=nan;
 
 for i=1:length(a)
     for itrial=1:nbprepost(i)
-        nzones = size(a{i}.behavResources(id_Pre{i}(itrial)).ZoneIndices,2)-2; %there are two zones in position 6 and 7 that are not used. *sigh*
+        nzones = size(a{i}.behavResources(id_Pre{i}(itrial)).ZoneIndices,2)-2;
         for izone=1:nzones
             if izone<6
                 trajzone_pre{i,itrial}(a{i}.behavResources(id_Pre{i}(itrial)).ZoneIndices{izone}) = izone;
@@ -753,10 +752,6 @@ for i=1:length(a)
             end
               % Supertitle
             mtit(supertit, 'fontsize',14, 'xoff', 0, 'yoff', 0.05);
-
-            if sav
-                print([dir_out 'Behav_pertrial_zonedyna_'  num2str(Mice_to_analyze(i))], '-dpng', '-r300');
-            end
     end
     
     %----------------------------------------------------------------------
@@ -813,10 +808,7 @@ for i=1:length(a)
                     title('Post-Tests latency')
                       % Supertitle
             mtit(['M' num2str(Mice_to_analyze(i))], 'fontsize',14, 'xoff', -.6, 'yoff', 0,'color',	[0, 0.4470, 0.7410]);        
-             
-            if sav
-                print([dir_out 'Behav_latency1stentry_'  num2str(Mice_to_analyze(i))], '-dpng', '-r300');
-            end
+      
     end
 
 
@@ -1019,15 +1011,12 @@ for i=1:length(a)
                 % Supertitle
                 mtit(supertit, 'fontsize',14, 'xoff', 0, 'yoff', 0.05);
 
-                if sav
-                    print([dir_out 'Behav_Trajectories_per_trial_'  num2str(Mice_to_analyze(i))], '-dpng', '-r300');
-                end
 
                 clear datpre datpost 
                 if cond
                     clear datcond
                 end
-     end 
+    end 
 end
 
 
@@ -1055,11 +1044,12 @@ if globalstats
         set(h_occ, 'LineWidth', 1);
         set(her_occ, 'LineWidth', 1);
         line(xlim,[21.5 21.5],'Color','k','LineStyle','--','LineWidth',1);
-        text(1.85,23.2,'Random Occupancy','FontSize',10);
+        text(2.3,23.2,'Random Occupancy','FontSize',8);
         ylabel('% time');
         title('Occupancy in rewarded zone', 'FontSize', 14);
-        ylim([0 75])
-
+        ylim([0 max(max([Pre_Occup_stim_mean*100 Post_Occup_stim_mean*100]))*1.2])
+        makepretty_erc
+        
         axes(NumEntr_Axes);
         % set y max
         ymax = max(max([Pre_entnum_mean Post_entnum_mean]))+(max(max([Pre_entnum_mean Post_entnum_mean]))*.15);
@@ -1075,7 +1065,8 @@ if globalstats
         ylabel('Number of entries');
         title('Nbr of entries to the rewarded zone', 'FontSize', 14);
         ylim([0 ymax])
-
+        makepretty_erc
+        
         axes(First_Axes);
         [p_first,h_first, her_first] = PlotErrorBarN_SL([Pre_FirstTime_mean Post_FirstTime_mean],...
             'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'colorPoints',1);
@@ -1088,7 +1079,9 @@ if globalstats
         set(her_first, 'LineWidth', 1);
         ylabel('Time (s)');
         title('First time to enter the reward zone', 'FontSize', 14);
-
+        ylim([0 max(max([Pre_FirstTime_mean Post_FirstTime_mean]))*1.2])
+        makepretty_erc
+        
         axes(Speed_Axes);
         [p_speed,h_speed, her_speed] = PlotErrorBarN_SL([Pre_VZmean_mean Post_VZmean_mean],...
             'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'colorPoints',1);
@@ -1101,12 +1094,8 @@ if globalstats
         set(her_speed, 'LineWidth', 1);
         ylabel('Speed (cm/s)');
         title('Average speed in the reward zone', 'FontSize', 14);
-        ylim([0 5])
-
-        % Save it
-        if sav
-            print([dir_out 'general_basic_stats'], '-dpng', '-r300');
-        end
+        ylim([0 max(max([Pre_VZmean_mean Post_VZmean_mean]))*1.2])
+        makepretty_erc
 end
 
 
@@ -1173,13 +1162,6 @@ if heatmaps
             rectangle('Position',[115 48 90 193], 'FaceColor',[1 1 1]) % center
             rectangle('Position',[1 160 114 80], 'EdgeColor',[0 1 0],'LineWidth',1.5) % stim zone
 
-            if sav
-                if cond
-                    print([dir_out 'Heatmaps_precondpost'], '-dpng', '-r300');
-                else
-                    print([dir_out 'Heatmaps_prepost'], '-dpng', '-r300');
-                end
-            end
 end
 
 %--------------------------------------------------------------------------
@@ -1242,9 +1224,6 @@ if traj_all
                 makepretty
         end
 
-        if sav
-            print([dir_out 'Behav_Post_per_Trial_ttest'], '-dpng', '-r300');
-        end
 end   
 
 % figure('Color',[1 1 1], 'render','painters','position',[10 10 1700 1000])
@@ -1489,13 +1468,6 @@ if finalfig
 %                 legend([b1 b2],{'Stim','No-stim'})%,'Location','EastOutside')
             
 
-            if sav
-                if cond
-                    print([dir_out 'finalbehav_precondpost2'], '-dpng', '-r600');
-                else
-                    print([dir_out 'finalbehav_prepost'], '-dpng', '-r600');
-                end
-            end
 end          
             
 %--------------------------------------------------------------------------
@@ -1721,17 +1693,6 @@ if heatstat
                     b2.CData(1,:) = repmat([1 1 1],1);
                     legend([b1 b2],{'Stim','No-stim'})
 
-            if sav
-                if bts
-                    if wilc
-                        print([dir_out 'OccComparePost-Pre_bts_' corr{icorr} '_ranksum'], '-dpng', '-r600');
-                    elseif tt
-                        print([dir_out 'OccComparePost-Pre_bts_' corr{icorr} '_ttest'], '-dpng', '-r900');
-                    end
-                else
-                    print([dir_out 'OccComparePost-Pre_' corr{icorr}], '-dpng', '-r900');
-                end
-            end        
     end
 end
     
@@ -1791,6 +1752,5 @@ function f_draw_umaze2(sizeMapx,sizeMapy)
         sizeMapx*((1/sizeMapx)*floor(.342*sizeMapx)) sizeMapy*((1/sizeMapy)*ceil(.7*sizeMapy))+.5], 'Linewidth', 1, 'FaceColor','w')
     rectangle('Position',[0 0 sizeMapx*((1/sizeMapx)*ceil(.32*sizeMapx))+.5 sizeMapy*((1/sizeMapy)*ceil(.35*sizeMapy))+.5], 'Linewidth', 1, 'EdgeColor','g') 
 end    
-
 
 end
