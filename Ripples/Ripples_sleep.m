@@ -63,7 +63,7 @@ id_Cond = cell(1,length(Dir.path));
 
 for i = 1:length(Dir.path)
     %% Get Data
-    Rip{i} = load([Dir.path{i}{1} 'Ripples.mat'], 'ripples');
+    Rip{i} = load([Dir.path{i}{1} 'SWR.mat'], 'ripples');
     try
         Sleep{i} = load([Dir.path{i}{1} 'SleepScoring_OBGamma.mat'], 'Sleep', 'SWSEpoch');
     catch
