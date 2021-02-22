@@ -32,11 +32,15 @@ for i = 1:2:length(varargin)
     if ~ischar(varargin{i})
         error(['Parameter ' num2str(i+2) ' is not a property.']);
     end
-    switch(lower(varargin{i}))
+    switch (lower(varargin{i}))
         case 'bulb_deep'
             Bulb_deep = varargin{i+1};
             ExpeInfo.ChannelToAnalyse.Bulb_deep=Bulb_deep;
-            load([pwd '/ChannelsToAnalyse/Bulb_deep.mat']);
+            try
+                load([pwd '/ChannelsToAnalyse/Bulb_deep.mat']);
+            catch
+                disp(['No ' (lower(varargin{i})) ' .mat file found. Creating...'])
+            end
             channel=Bulb_deep;
             save([pwd '/ChannelsToAnalyse/Bulb_deep.mat'],'channel');
             if ~isnumeric(Bulb_deep) 
@@ -45,7 +49,11 @@ for i = 1:2:length(varargin)
         case 'bulb_sup'
             Bulb_sup = varargin{i+1};
             ExpeInfo.ChannelToAnalyse.Bulb_deep=Bulb_sup;
-            load([pwd '/ChannelsToAnalyse/Bulb_sup.mat']);
+            try
+                load([pwd '/ChannelsToAnalyse/Bulb_sup.mat']);
+            catch
+                disp(['No ' (lower(varargin{i})) ' .mat file found. Creating...'])
+            end
             channel=Bulb_sup;
             save([pwd '/ChannelsToAnalyse/Bulb_sup.mat'],'channel');
             if ~isnumeric(Bulb_sup) 
@@ -54,16 +62,37 @@ for i = 1:2:length(varargin)
         case 'dhpc_deep'
             dHPC_deep = varargin{i+1};
             ExpeInfo.ChannelToAnalyse.dHPC_deep=dHPC_deep;
-            load([pwd '/ChannelsToAnalyse/dHPC_deep.mat']);
+            try
+                load([pwd '/ChannelsToAnalyse/dHPC_deep.mat']);
+            catch
+                disp(['No ' (lower(varargin{i})) ' .mat file found. Creating...'])
+            end
             channel=dHPC_deep;
             save([pwd '/ChannelsToAnalyse/dHPC_deep.mat'],'channel');            
             if ~isnumeric(dHPC_deep) 
                 error('Incorrect value for property ''dHPC_deep''.');
             end
+        case 'dhpc_sup'
+            dHPC_sup = varargin{i+1};
+            ExpeInfo.ChannelToAnalyse.dHPC_sup=dHPC_sup;
+            try
+                load([pwd '/ChannelsToAnalyse/dHPC_sup.mat']);
+            catch
+                disp(['No ' (lower(varargin{i})) ' .mat file found. Creating...'])
+            end
+            channel=dHPC_sup;
+            save([pwd '/ChannelsToAnalyse/dHPC_sup.mat'],'channel');            
+            if ~isnumeric(dHPC_sup) 
+                error('Incorrect value for property ''dHPC_sup''.');
+            end
         case 'dhpc_rip'
             dHPC_rip = varargin{i+1};
             ExpeInfo.ChannelToAnalyse.dHPC_deep=dHPC_rip;
-            load([pwd '/ChannelsToAnalyse/dHPC_rip.mat']);
+            try
+                load([pwd '/ChannelsToAnalyse/dHPC_rip.mat']);
+            catch
+                disp(['No ' (lower(varargin{i})) ' .mat file found. Creating...'])
+            end
             channel=dHPC_rip;
             save([pwd '/ChannelsToAnalyse/dHPC_rip.mat'],'channel');  
             if ~isnumeric(dHPC_rip) 
@@ -72,7 +101,11 @@ for i = 1:2:length(varargin)
         case 'ekg'
             EKG = varargin{i+1};
             ExpeInfo.ChannelToAnalyse.EKG=EKG;
-            load([pwd '/ChannelsToAnalyse/EKG.mat']);
+            try
+                load([pwd '/ChannelsToAnalyse/EKG.mat']);
+            catch
+                disp(['No ' (lower(varargin{i})) ' .mat file found. Creating...'])
+            end
             channel=EKG;
             save([pwd '/ChannelsToAnalyse/EKG.mat'],'channel');  
             if ~isnumeric(EKG) 
@@ -81,7 +114,11 @@ for i = 1:2:length(varargin)
         case 'pfcx_deep'
             PFCx_deep = varargin{i+1};
             ExpeInfo.ChannelToAnalyse.PFCx_deep=PFCx_deep;
-            load([pwd '/ChannelsToAnalyse/PFCx_deep.mat']);
+            try
+                load([pwd '/ChannelsToAnalyse/PFCx_deep.mat']);
+            catch
+                disp(['No ' (lower(varargin{i})) ' .mat file found. Creating...'])
+            end
             channel=PFCx_deep;
             save([pwd '/ChannelsToAnalyse/PFCx_deep.mat'],'channel');  
             if ~isnumeric(PFCx_deep) 
@@ -90,7 +127,11 @@ for i = 1:2:length(varargin)
         case 'pfcx_deltadeep'
             PFCx_deltadeep = varargin{i+1};
             ExpeInfo.ChannelToAnalyse.PFCx_deltadeep=PFCx_deltadeep;
-            load([pwd '/ChannelsToAnalyse/PFCx_deltadeep.mat']);
+            try    
+                load([pwd '/ChannelsToAnalyse/PFCx_deltadeep.mat']);
+            catch
+                disp(['No ' (lower(varargin{i})) ' .mat file found. Creating...'])
+            end
             channel=PFCx_deltadeep;
             save([pwd '/ChannelsToAnalyse/PFCx_deltadeep.mat'],'channel');
             if ~isnumeric(PFCx_deltadeep) 
@@ -99,7 +140,11 @@ for i = 1:2:length(varargin)
          case 'pfcx_deltasup'
             PFCx_deltasup = varargin{i+1};
             ExpeInfo.ChannelToAnalyse.PFCx_deltasup=PFCx_deltasup;
-            load([pwd '/ChannelsToAnalyse/PFCx_deltasup.mat']);
+            try
+                load([pwd '/ChannelsToAnalyse/PFCx_deltasup.mat']);
+            catch
+                disp(['No ' (lower(varargin{i})) ' .mat file found. Creating...'])
+            end
             channel=PFCx_deltasup;
             save([pwd '/ChannelsToAnalyse/PFCx_deltasup.mat'],'channel');
             if ~isnumeric(PFCx_deltasup) 
@@ -108,7 +153,11 @@ for i = 1:2:length(varargin)
          case 'pfcx_sup'
             PFCx_sup = varargin{i+1};
             ExpeInfo.ChannelToAnalyse.PFCx_sup=PFCx_sup;
-            load([pwd '/ChannelsToAnalyse/PFCx_sup.mat']);
+            try
+                load([pwd '/ChannelsToAnalyse/PFCx_sup.mat']);
+            catch
+                disp(['No ' (lower(varargin{i})) ' .mat file found. Creating...'])
+            end
             channel=PFCx_sup;
             save([pwd '/ChannelsToAnalyse/PFCx_sup.mat'],'channel');
             if ~isnumeric(PFCx_sup) 
@@ -117,7 +166,11 @@ for i = 1:2:length(varargin)
          case 'pfcx_deep'
             PFCx_deep = varargin{i+1};
             ExpeInfo.ChannelToAnalyse.PFCx_deep=PFCx_deep;
-            load([pwd '/ChannelsToAnalyse/PFCx_deep.mat']);
+            try
+                load([pwd '/ChannelsToAnalyse/PFCx_deep.mat']);
+            catch
+                disp(['No ' (lower(varargin{i})) ' .mat file found. Creating...'])
+            end
             channel=PFCx_deep;
             save([pwd '/ChannelsToAnalyse/PFCx_deep.mat'],'channel');
             if ~isnumeric(PFCx_deep) 
@@ -126,7 +179,11 @@ for i = 1:2:length(varargin)
          case 'pfcx_spindle'
             PFCx_spindle = varargin{i+1};
             ExpeInfo.ChannelToAnalyse.PFCx_spindle=PFCx_spindle;
-            load([pwd '/ChannelsToAnalyse/PFCx_spindle.mat']);
+            try
+                load([pwd '/ChannelsToAnalyse/PFCx_spindle.mat']);
+            catch
+                disp(['No ' (lower(varargin{i})) ' .mat file found. Creating...'])
+            end
             channel=PFCx_spindle;
             save([pwd '/ChannelsToAnalyse/PFCx_spindle.mat'],'channel');
             if ~isnumeric(PFCx_spindle) 
@@ -141,6 +198,19 @@ for i = 1:2:length(varargin)
             if ~isnumeric(Ref) 
                 error('Incorrect value for property ''Ref''.');
             end   
+         case 'nonhpc'
+            nonhpc = varargin{i+1};
+            ExpeInfo.ChannelToAnalyse.nonHPC=nonhpc;
+            try
+                load([pwd '/ChannelsToAnalyse/nonHPC.mat']);
+            catch
+                disp(['No ' (lower(varargin{i})) ' .mat file found. Creating...'])
+            end
+            channel=nonhpc;
+            save([pwd '/ChannelsToAnalyse/nonHPC.mat'],'channel');
+            if ~isnumeric(PFCx_spindle) 
+                error('Incorrect value for property ''nonHPC''.');
+            end  
          otherwise
             error(['Unknown property ''' num2str(varargin{i}) '''.']);
     end
