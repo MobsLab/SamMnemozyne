@@ -55,17 +55,17 @@ sesscond = {'Cond1','Cond2','Cond3','Cond4','Cond5','Cond6','Cond7','Cond8'};
 
 %% Get Data
 for i = 1:length(Dir.path)
-    load([Dir.path{i}{1} 'Ripples.mat'], 'ripples','dHPC_rip');
+    load([Dir.path{i}{1} 'SWR.mat'], 'ripples','dHPC_rip');
     if exist('ripples','var')
         if exist('dHPC_rip','var') 
-            Rip{i} = load([Dir.path{i}{1} 'Ripples.mat'], 'ripples','dHPC_rip');
+            Rip{i} = load([Dir.path{i}{1} 'SWR.mat'], 'ripples','dHPC_rip');
         else
-            load([Dir.path{i}{1} 'Ripples.mat'], 'ripples','ripples_Info');
+            load([Dir.path{i}{1} 'SWR.mat'], 'ripples','ripples_Info');
             Rip{i}.ripples = ripples;
             Rip{i}.dHPC_rip = ripples_Info.channel;
         end
     else
-        load([Dir.path{i}{1} 'Ripples.mat'], 'Ripples','ripples_Info');
+        load([Dir.path{i}{1} 'SWR.mat'], 'Ripples','ripples_Info');
         Rip{i}.ripples = Ripples;
         Rip{i}.dHPC_rip = ripples_Info.channel;
     end
@@ -1021,7 +1021,7 @@ for i=1:length(a)
     [M,T]=PlotRipRaw(LFPr,Data(rmvt)/1E4, [-60 60]);
     M_task = M; T_task=T;
     %SAVING ripraw variables to ripples.mat for later use
-    save([Dir.path{i}{1} 'Ripples.mat'],'M_task','T_task','-append');
+    save([Dir.path{i}{1} 'SWR.mat'],'M_task','T_task','-append');
     
     % plot average ripple
     supertit = ['Average ripple - M' num2str(subj(i))];
