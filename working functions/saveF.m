@@ -64,7 +64,7 @@ if ~exist('savfig','var')
     savfig = 0;
 end
 
-% create directory if doesn't exist and set permissions
+% create directory if doesn't exist 
 if ~exist(dirPath, 'dir')
     mkdir(dirPath);
 end
