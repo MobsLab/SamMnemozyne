@@ -59,7 +59,11 @@ load('MeanWaveform');
 load('ExpeInfo.mat');
 
 % Response to ripples
-load('Ripples.mat');
+try 
+    load('SWR.mat');
+catch
+    load('Ripples.mat')
+end
 
 % Different states
 load('SleepScoring_Accelero.mat','Wake', 'SWSEpoch', 'REMEpoch');
