@@ -48,7 +48,7 @@ for i = 1:2:length(varargin)
             error(['Unknown property ''' num2str(varargin{i}) '''.']);
     end
 end
-
+warning('off','all')
 %check if exist and assign default value if not
 % pooling session
 if ~exist('pooled','var')
@@ -80,20 +80,24 @@ res = 300;
 if ~exist(dirPath, 'dir')
     mkdir(dirPath);
 end
-
+% special case for Matlab on Linux using in root 
+if isunix
+    system(['sudo chown -R mobs /' pwd]);
+end
+    
 %% MAIN SCRIPT
 load('behavResources.mat');
 fSess = fieldnames(SessionEpoch);  %get structure field names 
 %Verify that all session called exist
 for isess=1:nsess
     id_allsess = strfind(fSess,session{isess});
-    id_sess(isess) = find(not(cellfun('isempty',id_allsess)));
-    if ~id_sess(isess)
+    idx = strcmp(fSess,session{isess});
+    id_sess(isess)=find(idx==1);
+    ansfind = find(not(cellfun('isempty',id_allsess)));
+    if ~ansfind
         error(['The session ' session{isess} 'does not exist.']);
     end
 end
-
-
 
 SetCurrentSession('same');
 MakeData_Spikes('mua',1,'recompute',recompute);
@@ -139,15 +143,7 @@ if pooled % pooled sessions
                 Restrict(XS,SessPool), Restrict(YS,SessPool), ... 
                 'smoothing',1.5, 'size', 50,'plotresults',0,'plotpoisson',plotfig);
             hold on
-            mtit(cellnames{i}, 'fontsize',14, 'xoff', -.6, 'yoff', 0) %set global title for each figure (tetrode and cluster #)
-            if save_data
-                dirPath = [pwd '/PlaceCells/' date '/'];
-                print([dirPath cellnames{i}], '-dpng', '-r300'); %
-                if isunix
-                    system(['sudo chown -R mobs /' dirPath]);
-                end
-            end
-        catch
+            mtit(cellnames{i}, 'fontsize',14, 'xoff', -.6, 'yoff', 0) %set global title for each figure (tetrode and cluster #)        catch
             disp(['No map available for ' cellnames{i}]);
         end
     end
