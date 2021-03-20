@@ -68,7 +68,7 @@ if ~exist(pathfig,'dir')
     mkdir(pathfig);
 end
 % Mice in the analysis
-nmouse = [124];
+nmouse = [168];
 
 % Paths retrieved
 % Dir = PathForExperimentsERC_Dima('UMazePAG'); 
@@ -139,10 +139,18 @@ for i=1:length(Dir.path)
             UMazeEpoch{i} = or(UMazeEpoch{i},behav{i}.SessionEpoch.TestPre2);
             UMazeEpoch{i} = or(UMazeEpoch{i},behav{i}.SessionEpoch.TestPre3);
             UMazeEpoch{i} = or(UMazeEpoch{i},behav{i}.SessionEpoch.TestPre4);
+            UMazeEpoch{i} = or(UMazeEpoch{i},behav{i}.SessionEpoch.TestPre5);
+            UMazeEpoch{i} = or(UMazeEpoch{i},behav{i}.SessionEpoch.TestPre6);
+            UMazeEpoch{i} = or(UMazeEpoch{i},behav{i}.SessionEpoch.TestPre7);
+            UMazeEpoch{i} = or(UMazeEpoch{i},behav{i}.SessionEpoch.TestPre8);
         catch
             UMazeEpoch{i} = or(behav{i}.SessionEpoch.TestPre1,behav{i}.SessionEpoch.TestPre2);
             UMazeEpoch{i} = or(UMazeEpoch{i},behav{i}.SessionEpoch.TestPre3);
             UMazeEpoch{i} = or(UMazeEpoch{i},behav{i}.SessionEpoch.TestPre4);
+            UMazeEpoch{i} = or(UMazeEpoch{i},behav{i}.SessionEpoch.TestPre5);
+            UMazeEpoch{i} = or(UMazeEpoch{i},behav{i}.SessionEpoch.TestPre6);
+            UMazeEpoch{i} = or(UMazeEpoch{i},behav{i}.SessionEpoch.TestPre7);
+            UMazeEpoch{i} = or(UMazeEpoch{i},behav{i}.SessionEpoch.TestPre8);
         end
     else
         UMazeEpoch{i} = behav{i}.SessionEpoch.Hab;
