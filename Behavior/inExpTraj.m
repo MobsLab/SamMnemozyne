@@ -42,11 +42,10 @@ fgh = figure('Color',[1 1 1], 'rend','painters','pos',[1 1 500 800],'Name', supe
        [p,h,her] = PlotErrorBarN_SL([ztime(1,:)' ztime(2,:)'],...
                 'barwidth', 0.6, 'newfig', 0,'barcolors',[.3 .3 .3]);
         h.FaceColor = 'flat';
-        h.CData(1,:) = [1 1 1]; h.CData(2,:) = [0 0 0];
-        set(gca,'xticklabel',{[]})
+        set(gca,'xticklabel',{'','','Stim','','NoStim','',''})
         set(h, 'LineWidth', 2);
         set(her, 'LineWidth', 2);
-        ylabel('%');
+        ylabel('%');       
         hline(20,'--k')
         title('Occupancy')
         makepretty_erc('fsizel',16,'lwidth',2,'fsizet',16)
