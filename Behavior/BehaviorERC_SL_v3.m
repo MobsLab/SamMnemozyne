@@ -1,4 +1,4 @@
-function [figH_ind figH] = BehaviorERC_SL_v3(expe,Mice_to_analyze,fixtrial)
+function [figH_ind figH] = BehaviorERC_SL_v3(expe,Mice_to_analyze,fixtrial,recompute)
 %BehaviorERC - Plot basic behavior comparisons of ERC experiment avergaed across mice.
 %
 % Plot occupance in the shock zone in the PreTests vs PostTests
@@ -32,15 +32,17 @@ sav = 1;
 
 %-------------- CHOOSE FIGURE TO OUTPUT ----------
 % per mouse
-trajdyn = 0; % Trajectories + barplot + zone dynamics 
-firstentry = 0; % 1st entry barplot per mouse
-trajoccup = 0; % trajectories and mean occupancy
+dirspeed = 1; %Trajectories with direction and speed analyses 
+trajdyn = 1; % Trajectories + barplot + zone dynamics 
+firstentry = 1; % 1st entry barplot per mouse
+trajoccup = 1; % trajectories and mean occupancy
 
+globalspeed =0;
 globalstats = 0; % global statistiques (not complete)
 heatmaps = 0; % heatmaps all mice
 traj_all = 0; %trajectories all mice
-finalfig = 1;
-heatstat = 1;
+finalfig = 0;
+heatstat = 0;
 
 %--------------- GET DIRECTORIES-------------------
 Dir = PathForExperimentsERC_SL(expe);
@@ -449,6 +451,63 @@ for i=1:length(a)
     end
 end
 
+% DIRECTION and SPEED
+if dirspeed || globalspeed
+    for i=1:length(a)
+        load([Dir.path{i}{1} '/behavResources.mat'], 'SpeedDir');
+        if ~exist('SpeedDir','var') || recompute
+            %Pre-tests
+            for k=1:length(id_Pre{i})
+                beh = a{i}.behavResources;
+                idx = id_Pre{i}(k);
+                [xdir{1,k} ydir{1,k} vdir{1,k} speed(1,k,1:3)] = SpeedUmaze(beh, idx);
+            end
+            %Cond
+            for k=1:length(id_Cond{i})
+                beh = a{i}.behavResources;
+                idx = id_Cond{i}(k);
+                [xdir{2,k} ydir{2,k} vdir{2,k} speed(2,k,1:3)] = SpeedUmaze(beh, idx);
+            end
+            %Post-tests
+            for k=1:length(id_Post{i})
+                beh = a{i}.behavResources;
+                idx = id_Post{i}(k);
+                [xdir{3,k} ydir{3,k} vdir{3,k} speed(3,k,1:3)] = SpeedUmaze(beh, idx);
+            end
+            % grouped by session
+            for idir=1:2
+                for isess=1:3
+                    if isess==2
+                        it = nbcond{i};
+                    else
+                        it = nbprepost(i);
+                    end
+                    all_mean(isess,idir) = nanmean(speed(isess,1:it,idir)); 
+                end
+            end
+            % prep by mouse
+            sd{i}.xdir = xdir;
+            sd{i}.ydir = ydir;
+            sd{i}.vdir = vdir;
+            sd{i}.speed = speed;
+            allmean_gr(i,1:3,1:2) = all_mean;
+            % saving to file (make future run faster)
+            SpeedDir.xdir = xdir;
+            SpeedDir.ydir = ydir;
+            SpeedDir.vdir = vdir;
+            SpeedDir.speed = speed;
+            SpeedDir.all_mean = all_mean;            
+            save([Dir.path{i}{1} '/behavResources.mat'], 'SpeedDir','-append');
+            clear SpeedDir
+        else
+            load([Dir.path{i}{1} '/behavResources.mat'], 'SpeedDir');
+            sd{i} = SpeedDir;
+            allmean_gr(i,1:3,1:2) = sd{i}.all_mean;
+        end
+    end
+end
+
+
 %% 
 %==========================================================================
 %
@@ -456,20 +515,177 @@ end
 %
 %==========================================================================
 
-lbls = {'','t1','','','t2','','',...
-        't3','','','t4','','','t5','','','t6','','',...
-        't7','','','t8',''};
-for it=1:nbprepost(i)*3
+lbls = {'t1','t2','t3','t4','t5','t6','t7','t8'};
+for it=1:nbprepost(i)
     probelbls{1,it}=lbls{1,it};
 end
-for it=1:nbcond{i}*3
+for it=1:nbcond{i}
     condlbls{1,it}=lbls{1,it};
 end
+
+clrs_default = get(gca,'colororder');
+
+%--------------------------------------------------------------------------
+%---------------- Trajectories direction and speed       ------------------
+%--------------------------------------------------------------------------
+warning('off','all')
+for i=1:length(a)
+    if dirspeed
+        supertit = ['Mouse ' num2str(Mice_to_analyze(i))  ' - Direction and Speed'];
+        figH_ind.dirspeed{i} = figure('Color',[1 1 1], 'rend','painters', ...
+                    'pos',[1 1 1400 800],'Name', supertit, 'NumberTitle','off');
+        % Trajectories
+            subplot(2,3,1) 
+                for k=1:nbprepost(i)  
+                    for idir=1:3
+                        for iseg=1:size(sd{i}.xdir{1,k},2)
+                            if sd{i}.xdir{1,k}{idir,iseg}
+                                x=sd{i}.xdir{1,k}{idir,iseg}';
+                                y=sd{i}.ydir{1,k}{idir,iseg}';
+                                z=zeros(size(x));
+                                s=sd{i}.vdir{1,k}{idir,iseg}';
+                                surface([x;x], [y;y], [z;z], [s;s],...
+                                    'FaceColor', 'no',...
+                                    'EdgeColor', 'interp',...
+                                    'LineWidth', .5);
+                                hold on
+                            end
+                        end
+                    end
+                end
+                axis off
+                xlim([-0.05 1.05])    
+                ylim([-0.05 1.05])
+                title('Pre-tests')
+                colormap('jet')
+                caxis([-15 15])
+                % constructing the u maze
+                f_draw_umaze
+                makepretty_erc
+                %legend
+                axP = get(gca,'Position');
+                hcb = colorbar('Location','westoutside');
+                ylabel(hcb,'(cm/s)')
+                set(gca, 'Position', axP)
+
+            subplot(2,3,2) 
+                 for k=1:nbcond{i}  
+                    for idir=1:3
+                        for iseg=1:size(sd{i}.xdir{2,k},2)
+                            if sd{i}.xdir{2,k}{idir,iseg}
+                                x=sd{i}.xdir{2,k}{idir,iseg}';
+                                y=sd{i}.ydir{2,k}{idir,iseg}';
+                                z=zeros(size(x));
+                                s=sd{i}.vdir{2,k}{idir,iseg}';
+                                surface([x;x], [y;y], [z;z], [s;s],...
+                                    'FaceColor', 'no',...
+                                    'EdgeColor', 'interp',...
+                                    'LineWidth', .5);
+                                hold on
+                            end
+                        end
+                    end
+                end
+                axis off
+                xlim([-0.05 1.05])    
+                ylim([-0.05 1.05])
+                title('Cond')
+                colormap('jet')
+                caxis([-15 15])
+                % constructing the u maze
+                f_draw_umaze
+                makepretty_erc
+
+            subplot(2,3,3) 
+                 for k=1:nbprepost(i)  
+                    for idir=1:3
+                        for iseg=1:size(sd{i}.xdir{3,k},2)
+                            if sd{i}.xdir{3,k}{idir,iseg}
+                                x=sd{i}.xdir{3,k}{idir,iseg}';
+                                y=sd{i}.ydir{3,k}{idir,iseg}';
+                                z=zeros(size(x));
+                                s=sd{i}.vdir{3,k}{idir,iseg}';
+                                surface([x;x], [y;y], [z;z], [s;s],...
+                                    'FaceColor', 'no',...
+                                    'EdgeColor', 'interp',...
+                                    'LineWidth', .5);
+                                hold on
+                            end
+                        end
+                    end
+                end
+                axis off
+                xlim([-0.05 1.05])    
+                ylim([-0.05 1.05])
+                title('Post-tests')
+                colormap('jet')
+                caxis([-15 15])
+                % constructing the u maze
+                f_draw_umaze
+                makepretty_erc
+
+        % Barplots
+            ymax = squeeze(max(max(max(sd{i}.speed(:,:,:)))))*1.1;
+            subplot(2,3,4)
+                [p_occ,h_occ, her_occ] = PlotErrorBarN_SL(squeeze(sd{i}.speed(1,1:nbprepost(i),1:2)),...
+                    'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'colorpoints',1);
+                h_occ.FaceColor = 'flat';
+                h_occ.CData(2,:) = [1 1 1];
+                set(gca,'Xtick',[1:2],'XtickLabel',{'Toward', 'Away'});
+                set(gca, 'FontSize', 14);
+                set(gca, 'LineWidth', 1);
+                set(h_occ, 'LineWidth', 1);
+                set(her_occ, 'LineWidth', 1);
+                ylabel('Speed cm/s');
+                ylim([0 ymax]);
+                makepretty_erc
+                %legend (hidden plot)
+%                 axP = get(gca,'Position');
+%                 legend(probelbls,'Location','westoutside')
+%                 set(gca, 'Position', axP)  
+                
+            if cond
+                subplot(2,3,5)
+                    [p_occ,h_occ, her_occ] = PlotErrorBarN_SL(squeeze(sd{i}.speed(2,1:nbcond{i},1:2)),...
+                        'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'colorpoints',1);
+                    h_occ.FaceColor = 'flat';
+                    h_occ.CData(2,:) = [1 1 1];
+                    set(gca,'Xtick',[1:2],'XtickLabel',{'Toward', 'Away'});
+                    set(gca, 'FontSize', 14);
+                    set(gca, 'LineWidth', 1);
+                    set(h_occ, 'LineWidth', 1);
+                    set(her_occ, 'LineWidth', 1);
+                    ylim([0 ymax]);
+                makepretty_erc
+            end
+
+            subplot(2,3,6)
+                [p_occ,h_occ, her_occ] = PlotErrorBarN_SL(squeeze(sd{i}.speed(3,1:nbprepost(i),1:2)),...
+                    'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'colorpoints',1);
+                h_occ.FaceColor = 'flat';
+                h_occ.CData(2,:) = [1 1 1];
+                set(gca,'Xtick',[1:2],'XtickLabel',{'Toward', 'Away'});
+                set(gca, 'FontSize', 14);
+                set(gca, 'LineWidth', 1);
+                set(h_occ, 'LineWidth', 1);
+                set(her_occ, 'LineWidth', 1);
+                ylim([0 ymax]);
+                makepretty_erc
+    end
+    
 
 %--------------------------------------------------------------------------
 %---------------- Trajectories + barplot + zone dynamics ------------------
 %--------------------------------------------------------------------------
-for i=1:length(a)
+    lbls = {'','t1','','','t2','','',...
+            't3','','','t4','','','t5','','','t6','','',...
+            't7','','','t8',''};
+    for it=1:nbprepost(i)*3
+        probelbls{1,it}=lbls{1,it};
+    end
+    for it=1:nbcond{i}*3
+        condlbls{1,it}=lbls{1,it};
+    end
     if trajdyn
         supertit = ['Mouse ' num2str(Mice_to_analyze(i))  ' - trial dynamics'];
         figH_ind.trajdyn{i} = figure('Color',[1 1 1], 'rend','painters', ...
@@ -758,7 +974,14 @@ for i=1:length(a)
     end
 
 
-    % Trajectories, barplot (stim/no-stim) per mouse   
+    % Trajectories, barplot (stim/no-stim) per mouse
+    lbls = {'','t1','','','t2','','',...
+        't3','','','t4','','','t5','','','t6','','',...
+        't7','','','t8',''};
+    for it=1:nbprepost(i)*3
+        probelbls{1,it}=lbls{1,it};
+    end
+    
     if trajoccup    
             supertit = ['Mouse ' num2str(Mice_to_analyze(i))  ' - Trajectories'];
             figH_ind.trajoccup{i} = figure('Color',[1 1 1], 'rend','painters', ...
@@ -895,13 +1118,18 @@ for i=1:length(a)
                         itrial=itrial+1;
                     end
                 end
-
+                
+                if fixtrial
+                    nbbars = 4*3;
+                else
+                    nbbars = 8*3;
+                end
                 subplot(3,3,7)
                     [p_occ,h_occ, her_occ] = PlotErrorBarN_DB(datpre*100,...
                         'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
                     h_occ.FaceColor = 'flat';
                     h_occ.CData([2:3:nbprepost(i)*3-1],:) = repmat([1 1 1],nbprepost(i),1);
-                    set(gca,'Xtick',[1:24],'XtickLabel',probelbls);
+                    set(gca,'Xtick',[1:nbbars],'XtickLabel',probelbls);
                     set(gca, 'FontSize', 14);
                     set(gca, 'LineWidth', 1);
                     set(h_occ, 'LineWidth', 1);
@@ -931,7 +1159,7 @@ for i=1:length(a)
                         'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
                     h_occ.FaceColor = 'flat';
                     h_occ.CData([2:3:nbprepost(i)*3-1],:) = repmat([1 1 1],nbprepost(i),1);
-                    set(gca,'Xtick',[1:24],'XtickLabel',probelbls);
+                    set(gca,'Xtick',[1:nbbars],'XtickLabel',probelbls);
                     set(gca, 'FontSize', 14);
                     set(gca, 'LineWidth', 1);
                     set(h_occ, 'LineWidth', 1);
@@ -959,6 +1187,37 @@ end
 %----------------------GENERAL BASIC STATS---------------------------------
 %--------------------------------------------------------------------------
 
+if globalspeed
+    dspeed = [squeeze(allmean_gr(:,1,:)) nan(length(a),1) squeeze(allmean_gr(:,2,:)) ...
+        nan(length(a),1) squeeze(allmean_gr(:,3,:))];
+    ymax = max(max(dspeed))*1.2;
+    
+    supertit = ['Global speed by direction'];
+    figH.globalspeed = figure('Color',[1 1 1], 'rend','painters', ...
+        'pos',[1 1 800 500],'Name', supertit, 'NumberTitle','off');
+    
+        [p,h,her] = PlotErrorBarN_SL(dspeed,...
+            'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'colorPoints',1);
+
+            h.FaceColor = 'flat';
+            h.CData(1,:) = [0 0 0]; h.CData(2,:) = [1 1 1];
+            h.CData(4,:) = [0 0 0]; h.CData(5,:) = [1 1 1];
+            h.CData(7,:) = [0 0 0]; h.CData(8,:) = [1 1 1];
+            set(gca,'xticklabel',{'','           Pre','','','            Cond','','','            Post',''})    
+            set(h, 'LineWidth', 1);
+            set(her, 'LineWidth', 1);
+            ylabel({'Speed','cm/s'});
+            ylim([0 ymax])
+            % creating legend with hidden-fake data (hugly but effective)
+                    b2=bar([-2],[ 1],'FaceColor','flat');
+                    b1=bar([-3],[ 1],'FaceColor','flat');
+                    b1.CData(1,:) = repmat([0 0 0],1);
+                    b2.CData(1,:) = repmat([1 1 1],1);
+                    legend([b1 b2],{'Toward SZ','Away from SZ'},'Location','NorthEast')
+            makepretty_erc 
+
+ end
+        
 if globalstats
     figH.globalstats = figure('units', 'normalized', 'outerposition', [0 0 0.65 0.65]);
         Occupancy_Axes = axes('position', [0.07 0.55 0.41 0.41]);
