@@ -28,4 +28,4 @@ end
 
 sleep_array = sleep_all;
 % save it in SleepScoring .mat file
-save('SleepScoring_OBGamma.mat','sleep_array','-append')
+save('SleepScoring_OBGamma.mat','sleep_array','-append','-v7.3')
