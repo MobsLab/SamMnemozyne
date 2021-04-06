@@ -6,8 +6,6 @@ function saveF(H,figName,dirPath,varargin)
 %           simultaneously in multiple formats). Can also save to
 %           the Matlab .fig format if option savfig is set to 1 
 %           (default: 0). 
-%           In case the user is saving using linux the function will
-%           set permission for the new files. 
 %
 % INPUTS:
 %   
@@ -21,10 +19,8 @@ function saveF(H,figName,dirPath,varargin)
 %                       ex: {'djpeg','dpdf','deps','dpng'} 
 %                       see Matlab print fonction for all possible formats  
 %                           -default: dpng
-%       - res           Resolution of saved file                            
-%                           -default: 300
-%       - savfig        Saving in .fig format                               
-%                           -default: 0
+%       - res           Resolution of saved file                            -default: 300
+%       - savfig        Saving in .fig format                               -default: 0
 %
 % NOTES:
 %   Written by S. Laventure 2020-12
@@ -64,9 +60,17 @@ if ~exist('savfig','var')
     savfig = 0;
 end
 
-% create directory if doesn't exist 
+% create directory if doesn't exist and set permissions
 if ~exist(dirPath, 'dir')
     mkdir(dirPath);
+%     if ismac
+%         disp('Creating folder (mac version)');
+%     elseif isunix
+%         disp('Creating folder (linux version)');
+%         system(['sudo chown mobs /' dirPath]);
+%     else
+%         disp('Creating folder (pc version)');
+%     end
 end
 
 % saving
