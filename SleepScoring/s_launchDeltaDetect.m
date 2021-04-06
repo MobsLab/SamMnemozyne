@@ -2,21 +2,22 @@ clear all
 expe = 'UMazePAG';
 expe = 'StimMFBWake';
 
-subj = [882];
+subj = [828];
 ss = 'accelero';
 ss = 'ob';
 
-thresh = [.5 .7];
+thresh = [2 1];
 
 % Get directories
-if strcmp(expe,'StimMFBWake') || strcmp(expe,'Novel')
-    Dir = PathForExperimentsERC_SL(expe);
-elseif strcmp(expe,'UMazePAG') 
-    Dir = PathForExperimentsERC_Dima(expe);
-else    
-    warning('Exited. Verify experiment name');
-    return
-end
+% if strcmp(expe,'StimMFBWake') || strcmp(expe,'Novel')
+%     Dir = PathForExperimentsERC_SL(expe);
+% elseif strcmp(expe,'UMazePAG') 
+%     Dir = PathForExperimentsERC_Dima(expe);
+% else    
+%     warning('Exited. Verify experiment name');
+%     return
+% end
+Dir = PathForExperimentsERC(expe);
 Dir = RestrictPathForExperiment(Dir,'nMice', subj);
 
 % get sessions id and timepoints
