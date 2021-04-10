@@ -1,12 +1,15 @@
-clear all
-expe = 'UMazePAG';
-expe = 'StimMFBWake';
+% clear all
+% expe = 'StimMFBWake';
+% expe = 'UMazePAG';
+% 
+% subj = [792];
+% ss = 'accelero';
+% ss = 'ob';
+% 
+% thresh = [2 1];
 
-subj = [828];
-ss = 'accelero';
-ss = 'ob';
+function s_launchDeltaDetect(expe,subj,ss,thresh)
 
-thresh = [2 1];
 
 % Get directories
 % if strcmp(expe,'StimMFBWake') || strcmp(expe,'Novel')
