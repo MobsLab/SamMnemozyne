@@ -62,9 +62,9 @@ Dir = RestrictPathForExperiment(Dir,'nMice', subj);
 
 % get sessions id and timepoints
 try
-    [id_pre tdatpre] = RestrictSession(Dir,'BaselineSleep');  %add variable for session to call
+    [id_pre tdatpre] = RestrictSession(Dir,'PreSleep');  %add variable for session to call
 catch
-    [id_pre tdatpre] = RestrictSession(Dir,'PreSleep');
+    [id_pre tdatpre] = RestrictSession(Dir,'BaselineSleep');
 end
 [id_post tdatpost] = RestrictSession(Dir,'PostSleep');
  
