@@ -44,6 +44,8 @@ for i = 1:2:length(varargin)
             recompute = varargin{i+1};
         case 'plotfig'
             plotfig = varargin{i+1};
+        case 'unique'
+            unique = varargin{i+1};
         otherwise
             error(['Unknown property ''' num2str(varargin{i}) '''.']);
     end
@@ -66,6 +68,10 @@ end
 if ~exist('plotfig','var')
     plotfig = 0;
 end
+%unique
+if ~exist('unique','var')
+    unique = 0;
+end
 
 
 %INIT VAR
@@ -87,15 +93,17 @@ end
     
 %% MAIN SCRIPT
 load('behavResources.mat');
-fSess = fieldnames(SessionEpoch);  %get structure field names 
-%Verify that all session called exist
-for isess=1:nsess
-    id_allsess = strfind(fSess,session{isess});
-    idx = strcmp(fSess,session{isess});
-    id_sess(isess)=find(idx==1);
-    ansfind = find(not(cellfun('isempty',id_allsess)));
-    if ~ansfind
-        error(['The session ' session{isess} 'does not exist.']);
+if ~unique
+    fSess = fieldnames(SessionEpoch);  %get structure field names 
+    %Verify that all session called exist
+    for isess=1:nsess
+        id_allsess = strfind(fSess,session{isess});
+        idx = strcmp(fSess,session{isess});
+        id_sess(isess)=find(idx==1);
+        ansfind = find(not(cellfun('isempty',id_allsess)));
+        if ~ansfind
+            error(['The session ' session{isess} 'does not exist.']);
+        end
     end
 end
 
@@ -107,10 +115,15 @@ load('SpikeData.mat');
 LocomotionEpoch = thresholdIntervals(Vtsd,5,'Direction', 'Above');
 hist(Data(Vtsd), 100)
 
-if ~isnan(sum(Data(AlignedXtsd)))
-    XS = Restrict(AlignedXtsd,LocomotionEpoch);
-    YS = Restrict(AlignedYtsd,LocomotionEpoch);
-else
+if ~unique
+    if ~isnan(sum(Data(AlignedXtsd)))
+        XS = Restrict(AlignedXtsd,LocomotionEpoch);
+        YS = Restrict(AlignedYtsd,LocomotionEpoch);
+    else
+        XS = Restrict(Xtsd,LocomotionEpoch);
+        YS = Restrict(Ytsd,LocomotionEpoch);
+    end
+else 
     XS = Restrict(Xtsd,LocomotionEpoch);
     YS = Restrict(Ytsd,LocomotionEpoch);
 end
@@ -199,48 +212,101 @@ if pooled % pooled sessions
     end
     
 else  % individual sessions
-    for isess=1:nsess
-        if ~exist([pwd '/PlaceCells/' session{isess}],'dir')
-            mkdir([pwd '/PlaceCells/' session{isess}]);
+    if ~unique
+        for isess=1:nsess
+            if ~exist([pwd '/PlaceCells/' session{isess}],'dir')
+                mkdir([pwd '/PlaceCells/' session{isess}]);
+            end
+            for i=1:length(S) 
+                try
+                    [map{i}, mapNS, stats{i}, px{i}, py{i}, FR{i}, xB, yB] = ... 
+                    PlaceField_DB(Restrict(Restrict(S{i},LocomotionEpoch),SessionEpoch.(fSess{id_sess(isess)})), ...
+                        Restrict(XS,SessionEpoch.(fSess{id_sess(isess)})), ... 
+                        Restrict(YS,SessionEpoch.(fSess{id_sess(isess)})), ... 
+                        'smoothing',1.5, 'size', 50,'plotresults',0,'plotpoisson',plotfig);
+                    hold on
+                    mtit(cellnames{i}, 'fontsize',14, 'xoff', -.6, 'yoff', 0) %set global title for each figure (tetrode and cluster #)
+                    if save_data
+                        print([pwd '/PlaceCells/' session{isess} '/' cellnames{i} ], '-dpng', '-r300'); %
+                    end
+                catch
+                    map{i} = [];
+                    disp(['No map available for ' cellnames{i}]);
+                end
+            end
+
+    %         % create global maps
+    %         if exist('map','var')
+    %             iclu=1;
+    %             for t=1:size(tetrodeChannels,2)
+    %                 if clunum(t)
+    %                     figure('Color',[1 1 1], 'rend','painters','pos',[10 10 300*clunum(t) 400])
+    %                     for i=1:clunum(t)
+    %                         subplot(1,clunum(t),i)
+    %                             if ~isempty(map{iclu})    
+    %                                 imagesc(map{1,iclu}.rate)
+    %                                 title(cellnames{iclu})
+    %                             end
+    %                         iclu=iclu+1;
+    %                     end
+    %                     if save_data
+    %                         print([pwd '/PlaceCells/' session{isess} '/SpikeGroup' num2str(t) ], '-dpng', '-r300');
+    %                     end
+    %                 end
+    %             end
+    %         end
+            supertit='All clusters from all tet/probes';
+            H = figure2(1,'Color',[1 1 1], 'rend','painters','pos',[1 1 1800 1200],'Name', supertit, 'NumberTitle','off');
+            for i=1:length(S) 
+                if ~isempty(map{i})
+                    si = round(stats{i}.spatialInfo,2);
+                    fr = round(FR{i},2);
+                    subplot(5,ceil(length(S)/5),i)
+                        plot(Data(XS),Data(YS),'Color',[0.8 0.8 0.8])
+                        hold on, plot(px{i},py{i},'r.')
+                        [xl, yl] = DefineGoodFigLimits_2D(Data(XS),Data(YS));
+                        xlim(xl); ylim(yl);
+                        set(gca,'xticklabel',{[]})
+                        set(gca,'yticklabel',{[]})
+                        title([cellnames{i} ', SI:' num2str(si) ', FR:' num2str(fr)],'FontSize',6);
+                end
+            end
+
+            % saving
+            set(H,'paperPositionMode','auto')
+            for i=1:length(sformat)
+                print(H,[dirPath figName], ['-' sformat], ['-r' num2str(res)]);
+            end
+            % saving in .fig format 
+            saveas(H,[dirPath figName],'fig');
+
+            % special case for Matlab on Linux using in root 
+            if isunix
+                system(['sudo chown -R mobs /' dirPath]);
+            end
+        end
+    else
+        if ~exist([pwd '/PlaceCells/' session{1}],'dir')
+            mkdir([pwd '/PlaceCells/' session{1}]);
         end
         for i=1:length(S) 
             try
                 [map{i}, mapNS, stats{i}, px{i}, py{i}, FR{i}, xB, yB] = ... 
-                PlaceField_DB(Restrict(Restrict(S{i},LocomotionEpoch),SessionEpoch.(fSess{id_sess(isess)})), ...
-                    Restrict(XS,SessionEpoch.(fSess{id_sess(isess)})), ... 
-                    Restrict(YS,SessionEpoch.(fSess{id_sess(isess)})), ... 
+                PlaceField_DB(Restrict(Restrict(S{i},LocomotionEpoch),SessionEpoch), ...
+                    Restrict(XS,SessionEpoch), ... 
+                    Restrict(YS,SessionEpoch), ... 
                     'smoothing',1.5, 'size', 50,'plotresults',0,'plotpoisson',plotfig);
                 hold on
                 mtit(cellnames{i}, 'fontsize',14, 'xoff', -.6, 'yoff', 0) %set global title for each figure (tetrode and cluster #)
                 if save_data
-                    print([pwd '/PlaceCells/' session{isess} '/' cellnames{i} ], '-dpng', '-r300'); %
+                    print([pwd '/PlaceCells/' session{1} '/' cellnames{i} ], '-dpng', '-r300'); %
                 end
             catch
                 map{i} = [];
                 disp(['No map available for ' cellnames{i}]);
             end
         end
-        
-%         % create global maps
-%         if exist('map','var')
-%             iclu=1;
-%             for t=1:size(tetrodeChannels,2)
-%                 if clunum(t)
-%                     figure('Color',[1 1 1], 'rend','painters','pos',[10 10 300*clunum(t) 400])
-%                     for i=1:clunum(t)
-%                         subplot(1,clunum(t),i)
-%                             if ~isempty(map{iclu})    
-%                                 imagesc(map{1,iclu}.rate)
-%                                 title(cellnames{iclu})
-%                             end
-%                         iclu=iclu+1;
-%                     end
-%                     if save_data
-%                         print([pwd '/PlaceCells/' session{isess} '/SpikeGroup' num2str(t) ], '-dpng', '-r300');
-%                     end
-%                 end
-%             end
-%         end
+
         supertit='All clusters from all tet/probes';
         H = figure2(1,'Color',[1 1 1], 'rend','painters','pos',[1 1 1800 1200],'Name', supertit, 'NumberTitle','off');
         for i=1:length(S) 
@@ -257,7 +323,7 @@ else  % individual sessions
                     title([cellnames{i} ', SI:' num2str(si) ', FR:' num2str(fr)],'FontSize',6);
             end
         end
-        
+
         % saving
         set(H,'paperPositionMode','auto')
         for i=1:length(sformat)
