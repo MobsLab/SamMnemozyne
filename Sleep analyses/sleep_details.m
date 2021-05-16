@@ -81,6 +81,11 @@ for i = 1:2:length(varargin)
             if ~isnumeric(delthresh)
                 error('Incorrect value for property ''delthresh''.');
             end
+        case 'spithresh'
+            spithresh = varargin{i+1};
+            if ~isnumeric(spithresh)
+                error('Incorrect value for property ''spithresh''.');
+            end
         case 'substages'
             substages = varargin{i+1};
             if substages~=0 && substages ~=1
@@ -129,6 +134,10 @@ end
 if ~exist('delthresh','var')
     delthresh=[2 1]; 
 end
+if ~exist('spithresh','var')
+    % [absolute detection; rootsquare det.]
+    spithresh=[2 3; 3 5];
+end
 if ~exist('substages','var')
     substages=1;
 end
@@ -155,7 +164,7 @@ disp('Detecting sleep events')
 disp(' ')
 CreateSleepSignals('recompute',recompute,'scoring',scoring,'stim',stim, ...
     'down',down,'delta',delta,'rip',rip,'spindle',spindle, ...
-    'ripthresh',ripthresh,'delthresh',delthresh);
+    'ripthresh',ripthresh,'delthresh',delthresh,'spithresh',spithresh);
 
 %% Substages
 if substages
