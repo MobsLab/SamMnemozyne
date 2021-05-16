@@ -1,3 +1,5 @@
+% function [fig_h] = DecodingQuality(varargin)
+
 % 
 % Detail:   For validation of the encoding. 
 % 
@@ -5,17 +7,48 @@
 %
 % By Samuel Laventure - 2020-07
 % 
+% for i = 1:2:length(varargin)
+%     switch(lower(varargin{i}))
+%             case 'nopos'
+%                 nopos = varargin{i+1};
+%                 if ~isnumeric(nopos)
+%                     error('Incorrect value for property ''nopos''.');
+%                 end
+%             otherwise
+%                 error(['Unknown property ''' num2str(varargin{i}) '''.']);
+%     end
+% end
 
 clear all
-load('nnBehavior.mat','behavior')
-load('inferring.mat');
-% treshall = [.05 .005 -.001 -.0095];
-treshall = [0.005 0.001 -.001];
-szside = 'left';
-nopos = 1;  % if there are no position in the var pos use this (nopos = 1)/for complete session only
-sesslen = times(end);
+
+%check if exist and assign default value if not
+% if there are no position in the var pos use this (nopos = 1)/for complete session only
+if ~exist('nopos','var')
+    nopos = 0;
+end
+if ~exist('szside','var')
+    szside = 'right';
+end
+if ~exist('tresh_all','var')
+    tresh_all = [.003];
+end
+
+dirPath = [pwd '/Figures/'];
+figName = 'realvspred';
+% create directory if doesn't exist and set permissions
+if ~exist(dirPath, 'dir')
+    mkdir(dirPath);
+end
+
+% loading data
+load('nnBehavior.mat','behavior');
+load(['results/inferring.mat']);
+
+% parameters
+% sesslen = times(end);
 testst_id = find(times>=behavior.testEpochs(1),1,'first');
 
+% recalculate position if it's decoding of a full run
 if nopos
     st = find(times>=behavior.trainEpochs(1),1,'first');
     posx = [zeros(1,st), interp1(1:length(behavior.positions(:,1)),behavior.positions(:,1)',linspace(1,length(behavior.positions(:,1)),length(inferring)-st))];
@@ -26,8 +59,8 @@ if nopos
     pos = [x;y]';
 end
 
-for itresh=1:length(treshall)
-    tresh=treshall(itresh);
+for itresh=1:length(tresh_all)
+    tresh=tresh_all(itresh);
     infer_id = find(inferring(:,3)<tresh);
     decodedposX = inferring(infer_id,1);
     decodedposY = inferring(infer_id,2);
@@ -84,7 +117,7 @@ for itresh=1:length(treshall)
     
     % Figure: x and y linear trajectories real (red) + predicted (blue)
     if nopos   
-        figure('Color',[1 1 1],'rend','painters','pos',[100+itresh*10 20+itresh*10 1600 800])
+        fig_h.fulldecode = figure('Color',[1 1 1],'rend','painters','pos',[100+itresh*10 20+itresh*10 1600 800])
             subplot(2,2,1:2)
                 hold on
                 rectangle('Position',[0 minx length(x)  maxx-minx],'FaceColor',[.9 .9 .9])
@@ -111,28 +144,33 @@ for itresh=1:length(treshall)
     
     %% real vs prediction relation in space
 
-    figure('Color',[1 1 1],'rend','painters','pos',[400+itresh*10 400+itresh*10 900 600])
-        plot(pos(:,1),pos(:,2),'k','linewidth',1) 
-        hold on
-        plot(posx(1:maxt),posy(1:maxt),'ko','markerfacecolor','k')
-        line([posx(1:maxt) decodedposX(1:maxt)]', [posy(1:maxt) decodedposY(1:maxt)]','color',[0.7 0.7 0.7]) 
-        hold on
-        plot(decodedposX(1:maxt), decodedposY(1:maxt),'k.')
-        hold on
-        scatter(posx,posy,15,tps,'filled')
-        colorbar
-        % plot(posx(1:maxt),posy(1:maxt),'k','linewidth',1) 
-        hold on 
-        plot(maze(:,1),maze(:,2),'k','LineWidth',2)
-        rectangle('Position',ShockZone,'EdgeColor','r','LineWidth',2)
-        title(['Thresh = ' num2str(tresh)])
-        xlim([.3 1.2])
-        ylim([.3 1.1])
+%     fig_h.distance = figure('Color',[1 1 1],'rend','painters','pos',[400+itresh*10 400+itresh*10 900 600])
+
 
 
     %% Location of stim vs real position
-    figure('Color',[1 1 1],'rend','painters','pos',[100+itresh*10 20+itresh*10 1600 600])
-            subplot(121)
+    fig_h.realvspred = figure('Color',[1 1 1],'rend','painters','pos',[100+itresh*10 20+itresh*10 2000 600]);
+            subplot(131)
+                plot(pos(:,1),pos(:,2),'k','linewidth',1) 
+                hold on
+                plot(posx(1:maxt),posy(1:maxt),'ko','markerfacecolor','k')
+                line([posx(1:maxt) decodedposX(1:maxt)]', [posy(1:maxt) decodedposY(1:maxt)]','color',[0.7 0.7 0.7]) 
+                hold on
+                plot(decodedposX(1:maxt), decodedposY(1:maxt),'k.')
+                hold on
+                scatter(posx,posy,15,tps,'filled')
+%                 colorbar
+                % plot(posx(1:maxt),posy(1:maxt),'k','linewidth',1) 
+                hold on 
+                plot(maze(:,1),maze(:,2),'k','LineWidth',2)
+                rectangle('Position',ShockZone,'EdgeColor','r','LineWidth',2)
+                title(['All points'])
+                xlim([0.335 1.045]);
+                ylim([0.36 1])
+                set(gca,'visible','off')
+                set(findall(gca, 'type', 'text'), 'visible', 'on'); % make title/labels visible
+        
+            subplot(132)
                 scatter(posx(val),posy(val),50,tps(val)','filled');
                 hold on
                 plot(maze(:,1),maze(:,2),'k','LineWidth',2)
@@ -140,31 +178,33 @@ for itresh=1:length(treshall)
                 hold off
                 xlim([0.335 1.045]);
                 ylim([0.36 1])
+                title({'Real position',['Stim zone: ' szside]}, 'FontSize', 16)
                 set(gca,'visible','off')
-                set(gca, 'XTickLabel', {}, 'YTickLabel', {});
-                title('Real position', 'FontSize', 16)
-            subplot(122)
+                set(findall(gca, 'type', 'text'), 'visible', 'on');
+                
+            subplot(133)
                 scatter(decodedposX(val),decodedposY(val),50,tps(val)','filled');
-                colorbar
+%                 colorbar
                 hold on
                 plot(maze(:,1),maze(:,2),'k','LineWidth',2)
                 rectangle('Position',ShockZone,'EdgeColor','r','LineWidth',2)
                 hold off
                 xlim([0.335 1.045])
                 ylim([0.36 1])
+                title({'Online inference',['Stim zone: ' szside]}, 'FontSize', 16)
                 set(gca,'visible','off')
-                set(gca, 'XTickLabel', {}, 'YTickLabel', {});
-                title('Online inference', 'FontSize', 16)
-                annotation('textbox', [0.4 0.87 0.1 0.1], 'String', ['Thresh = ' num2str(tresh)], 'FontWeight', 'bold', 'FontSize', 12,...
+                set(findall(gca, 'type', 'text'), 'visible', 'on');
+                
+                annotation('textbox', [0.455 0.04 0.1 0.1], ...
+                    'String', ['Thresh = ' num2str(tresh)], ...
+                    'FontWeight', 'bold', 'FontSize', 16,...
                     'EdgeColor', 'none')
-
+                annotation('textbox', [0.43 0.001 0.1 0.1], ...
+                    'String', ['Number of data point = ' num2str(length(val))], ...
+                    'FontWeight', 'bold', 'FontSize', 16,...
+                    'EdgeColor', 'none')
+                
+    print(fig_h.realvspred,[dirPath figName], '-dpng', '-r300');
 end
-            
-%% color coded trajectories and prediction
 
-%FigureRealVSInferred(pwd, tresh)
-        
-        
-%% real vs decoded shock zone        
-
-
+% end
