@@ -32,9 +32,9 @@ sav = 1;
 
 %-------------- CHOOSE FIGURE TO OUTPUT ----------
 % per mouse
-dirspeed = 1; %Trajectories with direction and speed analyses 
-trajdyn = 1; % Trajectories + barplot + zone dynamics 
-firstentry = 1; % 1st entry barplot per mouse
+dirspeed = 0; %Trajectories with direction and speed analyses 
+trajdyn = 0; % Trajectories + barplot + zone dynamics 
+firstentry = 0; % 1st entry barplot per mouse
 trajoccup = 1; % trajectories and mean occupancy
 
 globalspeed =0;
@@ -45,7 +45,8 @@ finalfig = 0;
 heatstat = 0;
 
 %--------------- GET DIRECTORIES-------------------
-Dir = PathForExperimentsERC_SL(expe);
+% Dir = PathForExperimentsERC_SL(expe);
+Dir = PathForExperimentsERC(expe);
 Dir = RestrictPathForExperiment(Dir,'nMice', Mice_to_analyze);
 
 %-------------- MAP PARAMETERS -----------
@@ -107,6 +108,8 @@ switch expe
         cond = 1;  % set to 1 if there are conditionning trial in UMaze
     case 'StimMFBSleep'
         cond = 0;
+    case 'UMazePAG'
+        cond = 1;
     case 'Reversal'
         cond = 1;     
     case 'FirstExploNew'
@@ -157,26 +160,54 @@ for i=1:length(a)
     
 end
 
+%% Get X and Y data
+for i=1:length(a)
+    if ~isempty(a{i}.behavResources(id_Pre{i}(1)).CleanAlignedXtsd)
+        for k=1:length(id_Pre{i})
+            xdat_pre{i,k}  = a{i}.behavResources(id_Pre{i}(k)).CleanAlignedXtsd;
+            xdat_post{i,k} = a{i}.behavResources(id_Post{i}(k)).CleanAlignedXtsd;
+            ydat_pre{i,k}  = a{i}.behavResources(id_Pre{i}(k)).CleanAlignedYtsd;
+            ydat_post{i,k} = a{i}.behavResources(id_Post{i}(k)).CleanAlignedYtsd;
+        end
+        for k=1:length(id_Cond{i})
+            xdat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).CleanAlignedXtsd;
+            ydat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).CleanAlignedYtsd;
+        end
+    else
+        for k=1:length(id_Pre{i})
+            xdat_pre{i,k}  = a{i}.behavResources(id_Pre{i}(k)).AlignedXtsd;
+            xdat_post{i,k} = a{i}.behavResources(id_Post{i}(k)).AlignedXtsd;
+            ydat_pre{i,k}  = a{i}.behavResources(id_Pre{i}(k)).AlignedYtsd;
+            ydat_post{i,k} = a{i}.behavResources(id_Post{i}(k)).AlignedYtsd;
+        end
+        for k=1:length(id_Cond{i})
+            xdat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).AlignedXtsd;
+            ydat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).AlignedYtsd;
+        end
+    end
+end
+
+
 %% Calculate average occupancy
 % Calculate occupancy de novo
 for i=1:length(a)
     for k=1:length(id_Pre{i})
         for t=1:length(a{i}.behavResources(id_Pre{i}(k)).Zone)
             Pre_Occup(i,k,t)=size(a{i}.behavResources(id_Pre{i}(k)).ZoneIndices{t},1)./...
-                size(Data(a{i}.behavResources(id_Pre{i}(k)).Xtsd),1);
+                size(Data(xdat_pre{i,k}),1);
         end
     end
     for k=1:length(id_Post{i})
         for t=1:length(a{i}.behavResources(id_Post{i}(k)).Zone)
             Post_Occup(i,k,t)=size(a{i}.behavResources(id_Post{i}(k)).ZoneIndices{t},1)./...
-                size(Data(a{i}.behavResources(id_Post{i}(k)).Xtsd),1);
+                size(Data(xdat_post{i,k}),1);
         end
     end
     if cond
         for k=1:length(id_Cond{i})
             for t=1:length(a{i}.behavResources(id_Cond{i}(k)).Zone)
                 Cond_Occup(i,k,t)=size(a{i}.behavResources(id_Cond{i}(k)).ZoneIndices{t},1)./...
-                    size(Data(a{i}.behavResources(id_Cond{i}(k)).Xtsd),1);
+                    size(Data(xdat_cond{i,k}),1);
             end
         end
     end
@@ -328,16 +359,16 @@ for i=1:length(a)
     for k=1:length(id_Pre{i})
         % if problem with hist2 it is because of eeglab hist2 function
         % place it in an another path temprorarly or reload PrgMatlab path)
-        [occH_pre, x1, x2] = hist2(Data(a{i}.behavResources(id_Pre{i}(k)).AlignedXtsd),...
-            Data(a{i}.behavResources(id_Pre{i}(k)).AlignedYtsd), 240, 320);
+        [occH_pre, x1, x2] = hist2(Data(xdat_pre{i,k}),...
+            Data(ydat_pre{i,k}), 240, 320);
         occHS_pre(i,k,1:320,1:240) = SmoothDec(occH_pre/freqVideo,[smo,smo]); 
         x_pre(i,k,1:240)=x1;
         y_pre(i,k,1:320)=x2;
     end % loop nb sess 
     %Post-tests
     for k=1:length(id_Post{i})
-        [occH_post, x1, x2] = hist2(Data(a{i}.behavResources(id_Post{i}(k)).AlignedXtsd),...
-            Data(a{i}.behavResources(id_Post{i}(k)).AlignedYtsd), 240, 320);
+        [occH_post, x1, x2] = hist2(Data(xdat_post{i,k}),...
+            Data(ydat_post{i,k}), 240, 320);
         occHS_post(i,k,1:320,1:240) = SmoothDec(occH_post/freqVideo,[smo,smo]); 
         x_post(i,k,1:240)=x1;
         y_post(i,k,1:320)=x2;
@@ -345,8 +376,8 @@ for i=1:length(a)
     %Cond
     if cond
         for k=1:length(id_Cond{i})
-            [occH_Cond, x1, x2] = hist2(Data(a{i}.behavResources(id_Cond{i}(k)).AlignedXtsd),...
-                Data(a{i}.behavResources(id_Cond{i}(k)).AlignedYtsd), 240, 320);
+            [occH_Cond, x1, x2] = hist2(Data(xdat_cond{i,k}),...
+                Data(ydat_cond{i,k}), 240, 320);
             occHS_Cond(i,k,1:320,1:240) = SmoothDec(occH_Cond/freqVideo,[smo,smo]); 
             x_Cond(i,k,1:240)=x1;
             y_Cond(i,k,1:320)=x2;
@@ -375,8 +406,8 @@ occup_cond_glob(occup_cond_glob==0) = nan;
 %     %Pre-tests
 %     for k=1:length(id_Pre{i})
 %         % occupation map
-%         [OccupMap_temp,xx,yy] = hist2d(Data(a{i}.behavResources(id_Pre{i}(k)).AlignedXtsd),...
-%             Data(a{i}.behavResources(id_Pre{i}(k)).AlignedYtsd),[0:0.01:1],[0:0.01:1]);
+%         [OccupMap_temp,xx,yy] = hist2d(Data(xdat_pre{i,k}),...
+%             Data(ydat_pre{i,k}),[0:0.01:1],[0:0.01:1]);
 %         OccupMap_temp = OccupMap_temp/sum(OccupMap_temp(:));
 % %         OccupMap_pre(i,k,1:101,1:101) = OccupMap_pre(i,k,:,:) + OccupMap_temp;
 %         OccupMap_pre(1:101,1:101) = OccupMap_pre(:,:) + OccupMap_temp;
@@ -384,8 +415,8 @@ occup_cond_glob(occup_cond_glob==0) = nan;
 %     %Post-tests
 %     for k=1:length(id_Post{i})
 %                 % occupation map
-%         [OccupMap_temp,xx,yy] = hist2d(Data(a{i}.behavResources(id_Post{i}(k)).AlignedXtsd),...
-%             Data(a{i}.behavResources(id_Post{i}(k)).AlignedYtsd),[0:0.01:1],[0:0.01:1]);
+%         [OccupMap_temp,xx,yy] = hist2d(Data(xdat_post{i,k}),...
+%             Data(ydat_post{i,k}),[0:0.01:1],[0:0.01:1]);
 %         OccupMap_temp = OccupMap_temp/sum(OccupMap_temp(:));
 % %         OccupMap_post(i,k,1:101,1:101) = OccupMap_post(i,k,:,:) + OccupMap_temp;
 %         OccupMap_post(1:101,1:101) = OccupMap_post(:,:) + OccupMap_temp;
@@ -523,7 +554,6 @@ for it=1:nbcond{i}
     condlbls{1,it}=lbls{1,it};
 end
 
-clrs_default = get(gca,'colororder');
 
 %--------------------------------------------------------------------------
 %---------------- Trajectories direction and speed       ------------------
@@ -534,11 +564,13 @@ for i=1:length(a)
         supertit = ['Mouse ' num2str(Mice_to_analyze(i))  ' - Direction and Speed'];
         figH_ind.dirspeed{i} = figure('Color',[1 1 1], 'rend','painters', ...
                     'pos',[1 1 1400 800],'Name', supertit, 'NumberTitle','off');
-        % Trajectories
+            clrs_default = get(gca,'colororder');
+            % Trajectories
             subplot(2,3,1) 
                 for k=1:nbprepost(i)  
                     for idir=1:3
                         for iseg=1:size(sd{i}.xdir{1,k},2)
+                            sd{i}.xdir{1,k}{idir,iseg}(isnan(sd{i}.xdir{1,k}{idir,iseg})) = 0;
                             if sd{i}.xdir{1,k}{idir,iseg}
                                 x=sd{i}.xdir{1,k}{idir,iseg}';
                                 y=sd{i}.ydir{1,k}{idir,iseg}';
@@ -572,6 +604,7 @@ for i=1:length(a)
                  for k=1:nbcond{i}  
                     for idir=1:3
                         for iseg=1:size(sd{i}.xdir{2,k},2)
+                            sd{i}.xdir{2,k}{idir,iseg}(isnan(sd{i}.xdir{2,k}{idir,iseg})) = 0;
                             if sd{i}.xdir{2,k}{idir,iseg}
                                 x=sd{i}.xdir{2,k}{idir,iseg}';
                                 y=sd{i}.ydir{2,k}{idir,iseg}';
@@ -600,6 +633,7 @@ for i=1:length(a)
                  for k=1:nbprepost(i)  
                     for idir=1:3
                         for iseg=1:size(sd{i}.xdir{3,k},2)
+                            sd{i}.xdir{3,k}{idir,iseg}(isnan(sd{i}.xdir{3,k}{idir,iseg})) = 0;
                             if sd{i}.xdir{3,k}{idir,iseg}
                                 x=sd{i}.xdir{3,k}{idir,iseg}';
                                 y=sd{i}.ydir{3,k}{idir,iseg}';
@@ -990,12 +1024,12 @@ for i=1:length(a)
                 subplot(3,3,1) 
                     for k=1:nbprepost(i)    
                         % -- trajectories    
-                        p1(k) = plot(Data(a{i}.behavResources(id_Pre{i}(k)).AlignedXtsd),...
-                            Data(a{i}.behavResources(id_Pre{i}(k)).AlignedYtsd),...
+                        p1(k) = plot(Data(xdat_pre{i,k}),...
+                            Data(ydat_pre{i,k}),...
                                  'linewidth',.5);  
                         hold on
-                        tempX = Data(a{i}.behavResources(id_Pre{i}(k)).AlignedXtsd);
-                        tempY = Data(a{i}.behavResources(id_Pre{i}(k)).AlignedYtsd);
+                        tempX = Data(xdat_pre{i,k});
+                        tempY = Data(ydat_pre{i,k});
                         plot(tempX(a{i}.behavResources(id_Pre{i}(k)).PosMat(:,4)==1),tempY(a{i}.behavResources(id_Pre{i}(k)).PosMat(:,4)==1),...
                             'p','Color','k','MarkerFaceColor','g','MarkerSize',16);
                         clear tempX tempY
@@ -1015,12 +1049,12 @@ for i=1:length(a)
                 subplot(3,3,2) 
                     for k=1:nbcond{i}   
                         % -- trajectories    
-                        p2(k) = plot(Data(a{i}.behavResources(id_Cond{i}(k)).AlignedXtsd),...
-                            Data(a{i}.behavResources(id_Cond{i}(k)).AlignedYtsd),...
+                        p2(k) = plot(Data(xdat_cond{i,k}),...
+                            Data(ydat_cond{i,k}),...
                                  'linewidth',.5);  
                         hold on
-                        tempX = Data(a{i}.behavResources(id_Cond{i}(k)).AlignedXtsd);
-                        tempY = Data(a{i}.behavResources(id_Cond{i}(k)).AlignedYtsd);
+                        tempX = Data(xdat_cond{i,k});
+                        tempY = Data(ydat_cond{i,k});
                         plot(tempX(a{i}.behavResources(id_Cond{i}(k)).PosMat(:,4)==1),tempY(a{i}.behavResources(id_Cond{i}(k)).PosMat(:,4)==1),...
                             'p','Color','k','MarkerFaceColor','g','MarkerSize',16);
                         clear tempX tempY
@@ -1035,12 +1069,12 @@ for i=1:length(a)
                 subplot(3,3,3) 
                     for k=1:nbprepost(i) 
                         % -- trajectories    
-                        p3(k) = plot(Data(a{i}.behavResources(id_Post{i}(k)).AlignedXtsd),...
-                            Data(a{i}.behavResources(id_Post{i}(k)).AlignedYtsd),...
+                        p3(k) = plot(Data(xdat_post{i,k}),...
+                            Data(ydat_post{i,k}),...
                                  'linewidth',.5);  
                         hold on
-                        tempX = Data(a{i}.behavResources(id_Post{i}(k)).AlignedXtsd);
-                        tempY = Data(a{i}.behavResources(id_Post{i}(k)).AlignedYtsd);
+                        tempX = Data(xdat_post{i,k});
+                        tempY = Data(ydat_post{i,k});
                         plot(tempX(a{i}.behavResources(id_Post{i}(k)).PosMat(:,4)==1),tempY(a{i}.behavResources(id_Post{i}(k)).PosMat(:,4)==1),...
                             'p','Color','k','MarkerFaceColor','g','MarkerSize',16);
                         clear tempX tempY
