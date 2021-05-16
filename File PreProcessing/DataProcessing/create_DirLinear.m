@@ -2,10 +2,12 @@ function create_DirLinear(expe,nMice)
 
 % simple function adding the direction of the mouse in TSD format within 
 % behavResources variable
+%
+% Written by SL - 2021-04
 
 %--------------- GET DIRECTORIES-------------------
-% Dir = PathForExperimentsERC_SL(expe);
-Dir = PathForExperimentsERC(expe);
+Dir = PathForExperimentsERC_SL(expe);
+% Dir = PathForExperimentsERC(expe);
 Dir = RestrictPathForExperiment(Dir,'nMice', nMice);
 
 sessNames = {'Hab','TestPre','Cond','TestPost','Extinct'};
