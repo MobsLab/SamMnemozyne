@@ -19,7 +19,7 @@ sourcePath = pwd;
 % Get path to files
 % 1-Event path
 FileList = dir(fullfile(cd, '**', 'channel_states.npy'));
-cd(FileList.folder);
+cd(FileList(1).folder);
 cd ..
 cd .. % get to the event folder 
 eventPath = pwd;
