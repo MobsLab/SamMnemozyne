@@ -3,16 +3,17 @@ clear all
 %----------- VARIABLE TO SET ----------
 %set mice ID
 mouse = {'M0882', 'M0863','M0936','M0941','M0913','M0934','M0935','M1016', ...
-         'M1081','M1116','M1117','M1161','M1162','M1168','M1182'};
-     
-ok_mfb = [1 1 0 1 1 1 0 0 1 1 1 1 1 1 1 0]; % mouse that are use in experiment
-ok_dual = [0 1 0 1 1 0 0 0 1 1 1 1 1 1 1 0]; % mouse that are use in experiment  
-% with electrophy
-ok_mfb =  [1 0 0 1 0 0 0 0 0 0 1 1 1 1 1 0]; % mouse that are use in experiment
-ok_dual = [0 0 0 1 0 0 0 0 0 0 1 1 1 1 1 0]; % mouse that are use in experiment
+         'M1081','M1116','M1117','M1161','M1162','M1168','M1182','M1199'};
+% full set     
+ok_mfb = [1 1 0 1 1 1 0 0 1 1 1 1 1 1 1 0 0]; % mouse that are use in experiment
+ok_dual = [0 1 0 1 1 0 0 0 1 1 1 1 1 1 1 0 1]; % mouse that are use in experiment  
+% only 
+ok_mfb =  [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]; % mouse that are use in experiment
+ok_dual = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0]; % mouse that are use in experiment
 %set MFB voltage used during dual
 voltmfbpag = [6 NaN; 5 7; 3 3; 7 8.5; 4 5; NaN NaN; NaN NaN; 4.5 6; ...
-              7 3.5; 3.5 4; 3.5 7; 3 4; 3.5 4.5; 3.5 5; 2.5 5];
+              7 3.5; 3.5 4; 3.5 7; 3 4; 3.5 4.5; 3.5 5; 2.5 5; ...
+              3.5 6];
           
 %----------- SAVING PARAMETERS ----------
 % Outputs
@@ -198,7 +199,17 @@ mfbnbr(15,:) = [7; NaN; 10; NaN; 8; NaN; ...
 dualnbr(15,:) = [31; NaN; 23; 32; 35; NaN;  ...
                   4; 1; NaN; NaN; NaN; NaN;...
                   NaN; NaN; NaN; NaN; NaN; NaN;...
-                  NaN; NaN; NaN];      
+                  NaN; NaN; NaN];  
+%M1199
+mfbnbr(16,:) = [NaN; NaN; NaN; NaN; NaN; NaN;... 
+                NaN; NaN; NaN; NaN; NaN; NaN;...
+                NaN; NaN; NaN; NaN; NaN; NaN;...
+                NaN; NaN; NaN]; 
+
+dualnbr(16,:) = [34; NaN; 35; NaN; 11; 2;  ...
+                  NaN; NaN; NaN; NaN; NaN; NaN;...
+                  NaN; NaN; NaN; NaN; NaN; NaN;...
+                  NaN; NaN; NaN];       
               
 %voltage = [0 0.5 1 1.5 2 2.5 ...
 %           3 3.5 4 4.5 5 5.5 ...
@@ -354,10 +365,12 @@ figure2(1,'Color',[1 1 1], 'rend','painters', ...
         title('MFB')
         xlabel('MFB voltage') 
         ylabel('Nbr of self-stimulation')
-        for i=1:length(mrk)
-            mrk{i}.Annotation.LegendInformation.IconDisplayStyle = 'off';
+        if exist('mrk','var')
+            for i=1:length(mrk)
+                mrk{i}.Annotation.LegendInformation.IconDisplayStyle = 'off';
+            end
+            legend(mouse{find(ok_mfb)}, 'Location','westoutside')
         end
-        legend(mouse{find(ok_mfb)}, 'Location','westoutside')
         makepretty_erc
 
 %Normalized MFB
