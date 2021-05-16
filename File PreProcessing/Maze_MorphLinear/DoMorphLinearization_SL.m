@@ -13,7 +13,7 @@ for isess = 1:length(sess)
     if ~exist('AlignedXtsd','var')
         % Align
         load behavResources.mat  
-        [AlignedXtsd,AlignedYtsd,ZoneEpochAligned,XYOutput] = MorphMazeToSingleShape_SL(Xtsd,Ytsd,...
+        [AlignedXtsd,AlignedYtsd,ZoneEpochAligned,XYOutput] = MorphMazeToSingleShape_SL(CleanXtsd,CleanYtsd,...
             Zone{1},ref,Ratio_IMAonREAL);
         save('behavResources.mat', 'AlignedXtsd', 'AlignedYtsd', 'ZoneEpochAligned', 'XYOutput',  '-append');
         disp(['Morphing on ' sess{isess} ' done.']);
