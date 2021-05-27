@@ -28,25 +28,25 @@ rmpath([dropbox '\DataSL\Matlab_scripts\working functions\generic\eeglab\sccn-ee
 
 %-------------- RUNNNING PARAMETERS -----------
 old = 0;
-sav = 1;
+sav = 0;
 
 %-------------- CHOOSE FIGURE TO OUTPUT ----------
 % per mouse
 dirspeed = 0; %Trajectories with direction and speed analyses 
 trajdyn = 0; % Trajectories + barplot + zone dynamics 
 firstentry = 0; % 1st entry barplot per mouse
-trajoccup = 1; % trajectories and mean occupancy
+trajoccup = 0; % trajectories and mean occupancy
 
 globalspeed =0;
 globalstats = 0; % global statistiques (not complete)
 heatmaps = 0; % heatmaps all mice
-traj_all = 0; %trajectories all mice
+traj_all = 1; %trajectories all mice
 finalfig = 0;
 heatstat = 0;
 
 %--------------- GET DIRECTORIES-------------------
 % Dir = PathForExperimentsERC_SL(expe);
-Dir = PathForExperimentsERC(expe);
+Dir = PathForExperimentsERC_SL(expe);
 Dir = RestrictPathForExperiment(Dir,'nMice', Mice_to_analyze);
 
 %-------------- MAP PARAMETERS -----------
@@ -162,18 +162,18 @@ end
 
 %% Get X and Y data
 for i=1:length(a)
-    if ~isempty(a{i}.behavResources(id_Pre{i}(1)).CleanAlignedXtsd)
-        for k=1:length(id_Pre{i})
-            xdat_pre{i,k}  = a{i}.behavResources(id_Pre{i}(k)).CleanAlignedXtsd;
-            xdat_post{i,k} = a{i}.behavResources(id_Post{i}(k)).CleanAlignedXtsd;
-            ydat_pre{i,k}  = a{i}.behavResources(id_Pre{i}(k)).CleanAlignedYtsd;
-            ydat_post{i,k} = a{i}.behavResources(id_Post{i}(k)).CleanAlignedYtsd;
-        end
-        for k=1:length(id_Cond{i})
-            xdat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).CleanAlignedXtsd;
-            ydat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).CleanAlignedYtsd;
-        end
-    else
+%     try
+%         for k=1:length(id_Pre{i})
+%             xdat_pre{i,k}  = a{i}.behavResources(id_Pre{i}(k)).CleanAlignedXtsd;
+%             xdat_post{i,k} = a{i}.behavResources(id_Post{i}(k)).CleanAlignedXtsd;
+%             ydat_pre{i,k}  = a{i}.behavResources(id_Pre{i}(k)).CleanAlignedYtsd;
+%             ydat_post{i,k} = a{i}.behavResources(id_Post{i}(k)).CleanAlignedYtsd;
+%         end
+%         for k=1:length(id_Cond{i})
+%             xdat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).CleanAlignedXtsd;
+%             ydat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).CleanAlignedYtsd;
+%         end
+%     catch
         for k=1:length(id_Pre{i})
             xdat_pre{i,k}  = a{i}.behavResources(id_Pre{i}(k)).AlignedXtsd;
             xdat_post{i,k} = a{i}.behavResources(id_Post{i}(k)).AlignedXtsd;
@@ -184,7 +184,7 @@ for i=1:length(a)
             xdat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).AlignedXtsd;
             ydat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).AlignedYtsd;
         end
-    end
+%     end
 end
 
 
@@ -250,7 +250,7 @@ for i = 1:length(a)
     for k=1:length(id_Pre{i})
         if isempty(a{i}.behavResources(id_Pre{i}(k)).ZoneIndices{1})
             Pre_FirstTime(i,k) = floor(a{i}.behavResources(id_Pre{i}(1)).PosMat(end,1)- ...
-            a{i}.behavResources(id_Pre{i}(1)).PosMat(1,1));;
+            a{i}.behavResources(id_Pre{i}(1)).PosMat(1,1));
         else
             Pre_FirstZoneIndices{i}{k} = a{i}.behavResources(id_Pre{i}(k)).ZoneIndices{1}(1);
             Pre_FirstTime(i,k) = a{i}.behavResources(id_Pre{i}(k)).PosMat(Pre_FirstZoneIndices{i}{k}(1),1)-...
@@ -261,7 +261,7 @@ for i = 1:length(a)
     for k=1:length(id_Post{i})
         if isempty(a{i}.behavResources(id_Post{i}(k)).ZoneIndices{1})
             Post_FirstTime(i,k) = floor(a{i}.behavResources(id_Pre{i}(1)).PosMat(end,1)- ...
-            a{i}.behavResources(id_Pre{i}(1)).PosMat(1,1));;
+            a{i}.behavResources(id_Pre{i}(1)).PosMat(1,1));
         else
             Post_FirstZoneIndices{i}{k} = a{i}.behavResources(id_Post{i}(k)).ZoneIndices{1}(1);
             Post_FirstTime(i,k) = a{i}.behavResources(id_Post{i}(k)).PosMat(Post_FirstZoneIndices{i}{k}(1),1)-...
