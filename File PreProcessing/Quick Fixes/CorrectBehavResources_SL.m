@@ -1,15 +1,19 @@
 %% Load data
-mice = [1199];
+mice = [882];
 Dir = PathForExperimentsERC_SL('StimMFBWake');
 Dir = RestrictPathForExperiment(Dir, 'nMice', mice);
 
 for imouse = 1:length(Dir.path)
     
-    cd(Dir.path{imouse}{2});
-    load('behavResources.mat');
-    mkdir('Old');
-    if ~exist([pwd '/Old/behavResources.mat'],'file')
-        copyfile('behavResources.mat', [pwd '/Old']);
+    cd(Dir.path{imouse}{1});
+    try
+        load('behavResources.mat');
+    catch
+        load([pwd '/Old_behavResources/behavResources.mat']);
+    end
+    mkdir('Old_behavResources');
+    if ~exist([pwd '/Old_behavResources/behavResources.mat'],'file')
+        copyfile('behavResources.mat', [pwd '/Old_behavResources']);
     else
         disp('behavResources already backed up. Skipping copyfile. ')
     end
@@ -67,10 +71,10 @@ for imouse = 1:length(Dir.path)
     %% Substitute stand-alone variables
     Xtsd = Old.CleanXtsd;
     Ytsd = Old.CleanYtsd;
-    AlignedXtsd = Old.CleanAlignedXtsd;
-    AlignedYtsd = Old.CleanAlignedYtsd;
-%     AlignedXtsd = Old.AlignedXtsd; % for Sam
-%     AlignedYtsd = Old.AlignedYtsd;  % for Sam
+%     AlignedXtsd = Old.CleanAlignedXtsd;
+%     AlignedYtsd = Old.CleanAlignedYtsd;
+    AlignedXtsd = Old.AlignedXtsd; % for Sam
+    AlignedYtsd = Old.AlignedYtsd;  % for Sam
     Vtsd = Old.CleanVtsd;
     
     PosMat = Old.CleanPosMat;
@@ -103,25 +107,28 @@ for imouse = 1:length(Dir.path)
         behavResources(ifield).DiodMask = Old.behavResources(ifield).DiodMask;
         behavResources(ifield).DiodThresh = Old.behavResources(ifield).DiodThresh;
         
-        behavResources(ifield).PosMat = Old.behavResources(ifield).CleanPosMat;
+        behavResources(ifield).PosMat = Old.behavResources(ifield).PosMat;
+%         behavResources(ifield).PosMat = Old.behavResources(ifield).CleanPosMat;
         behavResources(ifield).PosMatInit = Old.behavResources(ifield).PosMatInit;
         behavResources(ifield).im_diff = Old.behavResources(ifield).im_diff;
         behavResources(ifield).im_diffInit = Old.behavResources(ifield).im_diffInit;
         behavResources(ifield).Imdifftsd = Old.behavResources(ifield).Imdifftsd;
         behavResources(ifield).Xtsd = Old.behavResources(ifield).CleanXtsd;
         behavResources(ifield).Ytsd = Old.behavResources(ifield).CleanYtsd;
-        behavResources(ifield).AlignedXtsd = Old.behavResources(ifield).CleanAlignedXtsd;
-        behavResources(ifield).AlignedYtsd = Old.behavResources(ifield).CleanAlignedYtsd;
-%         behavResources(ifield).AlignedXtsd = Old.behavResources(ifield).AlignedXtsd;
-%         behavResources(ifield).AlignedYtsd = Old.behavResources(ifield).AlignedYtsd;
-        behavResources(ifield).Vtsd = Old.behavResources(ifield).CleanVtsd;
+%         behavResources(ifield).AlignedXtsd = Old.behavResources(ifield).CleanAlignedXtsd;
+%         behavResources(ifield).AlignedYtsd = Old.behavResources(ifield).CleanAlignedYtsd;
+        behavResources(ifield).AlignedXtsd = Old.behavResources(ifield).AlignedXtsd;
+        behavResources(ifield).AlignedYtsd = Old.behavResources(ifield).AlignedYtsd;
+        behavResources(ifield).Vtsd = Old.behavResources(ifield).Vtsd;
         behavResources(ifield).GotFrame = Old.behavResources(ifield).GotFrame;
-        behavResources(ifield).ZoneIndices = Old.behavResources(ifield).CleanZoneIndices;
+        behavResources(ifield).ZoneIndices = Old.behavResources(ifield).ZoneIndices;
+%         behavResources(ifield).ZoneIndices = Old.behavResources(ifield).CleanZoneIndices;
         behavResources(ifield).MouseTemp = Old.behavResources(ifield).MouseTemp;
         behavResources(ifield).FreezeEpoch = Old.behavResources(ifield).FreezeEpoch;
-        behavResources(ifield).ZoneEpoch = Old.behavResources(ifield).CleanZoneEpoch;
-%         behavResources(ifield).LinearDist = Old.behavResources(ifield).CleanLinearDist;
+        behavResources(ifield).ZoneEpoch = Old.behavResources(ifield).ZoneEpoch;
+%         behavResources(ifield).ZoneEpoch = Old.behavResources(ifield).CleanZoneEpoch;
         behavResources(ifield).LinearDist = Old.behavResources(ifield).LinearDist;
+%         behavResources(ifield).LinearDist = Old.behavResources(ifield).CleanLinearDist;
         try
             behavResources(ifield).DirLinear = Old.behavResources(ifield).DirLinear;
             behavResources(ifield).DirEpoch = Old.behavResources(ifield).DirEpoch;
