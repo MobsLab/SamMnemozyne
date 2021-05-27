@@ -2,18 +2,17 @@ clear all
 
 %----------- VARIABLE TO SET ----------
 %set mice ID
-mouse = {'M0882', 'M0863','M0936','M0941','M0913','M0934','M0935','M1016', ...
+mouse = {'M0882','M0863','M0936','M0941','M0913','M0934','M0935','M1016', ...
          'M1081','M1116','M1117','M1161','M1162','M1168','M1182','M1199'};
 % full set     
-ok_mfb = [1 1 0 1 1 1 0 0 1 1 1 1 1 1 1 0 0]; % mouse that are use in experiment
-ok_dual = [0 1 0 1 1 0 0 0 1 1 1 1 1 1 1 0 1]; % mouse that are use in experiment  
-% only 
-ok_mfb =  [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]; % mouse that are use in experiment
-ok_dual = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0]; % mouse that are use in experiment
-%set MFB voltage used during dual
-voltmfbpag = [6 NaN; 5 7; 3 3; 7 8.5; 4 5; NaN NaN; NaN NaN; 4.5 6; ...
-              7 3.5; 3.5 4; 3.5 7; 3 4; 3.5 4.5; 3.5 5; 2.5 5; ...
-              3.5 6];
+ok_mfb  = [1 0 0 1 0 0 0 0 0 0 1 1 1 1 0 1]; % mouse that are use in experiment
+ok_dual = [0 0 0 1 0 0 0 0 0 0 1 1 1 1 0 1]; % mouse that are use in experiment  
+% % only 
+% ok_mfb =  [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]; % mouse that are use in experiment
+% ok_dual = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0]; % mouse that are use in experiment
+%set MFB voltage used during dual & exp pag voltage
+voltmfbpag = [6 3.5; 5 5.5; 3 3; 7 6; 4 5; NaN NaN; NaN NaN; 4.5 6; ...
+              7 3.5; 3.5 4; 3.5 7; 3 4; 3.5 4.5; 3.5 5; 2.5 5; 3.5 5.5];
           
 %----------- SAVING PARAMETERS ----------
 % Outputs
@@ -201,8 +200,8 @@ dualnbr(15,:) = [31; NaN; 23; 32; 35; NaN;  ...
                   NaN; NaN; NaN; NaN; NaN; NaN;...
                   NaN; NaN; NaN];  
 %M1199
-mfbnbr(16,:) = [NaN; NaN; NaN; NaN; NaN; NaN;... 
-                NaN; NaN; NaN; NaN; NaN; NaN;...
+mfbnbr(16,:) = [5; NaN; 8; NaN; 5; NaN;... 
+                3; NaN; 30; 37; 35; NaN;...
                 NaN; NaN; NaN; NaN; NaN; NaN;...
                 NaN; NaN; NaN]; 
 
@@ -249,71 +248,73 @@ end
 
 randomColors = jet(size(dualnbr,1));
 
-%
-% % --------------------------------------------------------------------------
-% %                   M F B   b y   M O U S E
-% % --------------------------------------------------------------------------
-% % MFB
-% for i=1:length(mouse)
-%     if ok_mfb(i)
-%         supertit = [mouse{i} ': Self-stimulation during MFB calibration'];
-%         figure2(1,'Color',[1 1 1], 'rend','painters', ...
-%             'pos',[10 10 800 1000],'Name', supertit, 'NumberTitle','off');
-%         
-% %         figure2(1,'Position',[0 50 600 400])
-%             y = mfbnbr(i,:); %nbr stim
-%             x = voltage(:); %voltage
-%             idx = ~any(isnan(y),1);
-%             subplot(211)
-%                 plot(x(idx),y(idx),'-o')
-%                 hold on
-%                 if ~isnan(voltmfbpag(i,1))
-%     %                 plot((find(voltage==voltmfbpag(i,1))-1)/2,y(find(voltage==voltmfbpag(i,1))),'-s','MarkerSize',10,...
-%     %                     'MarkerEdgeColor','red',...
-%     %                     'MarkerFaceColor',[1 .6 .6])
-%                     xline((find(voltage==voltmfbpag(i,1))-1)/2);
-%                     hold on
-%                 end
-% 
-%                 ylim([0 42]);
-%                 xlim([0 8.5]);
-%                 title(['Mouse ' mouse{i} ': Self-stimulation during MFB calibration'])
-%                 xlabel('MFB voltage') 
-%                 ylabel('Nbr of self-stimulation')
-%                 makepretty_erc
-%     end
-%     if ok_dual(i)
-%             subplot(212)
-%     %         figure2(1,'Position',[0 50 600 400])
-%                 y = dualnbr(i,:); %nbr stim
-%                 x = voltage(:); %voltage
-%                 idx = ~any(isnan(y),1);
-% 
-%                 plot(x(idx),y(idx),'-o')
-%                 hold on
-%                 if ~isnan(voltmfbpag(i,1))
-%     %                 plot((find(voltage==voltmfbpag(i,2))-1)/2,y(find(voltage==voltmfbpag(i,2))),'-s','MarkerSize',10,...
-%     %                     'MarkerEdgeColor','red',...
-%     %                     'MarkerFaceColor',[1 .6 .6])
-%                     xline((find(voltage==voltmfbpag(i,2))-1)/2);
-%                     hold on
-%                 end
-% 
-%                 ylim([0 42]);
-%                 xlim([0 8.5]);
-%                 title(['Mouse ' mouse{i} ': Self-stimulation during dual stimultion (MFB+PAG)'])
-%                 xlabel('PAG voltage') 
-%                 ylabel('Nbr of self-stimulation')
-%                 makepretty_erc
-% 
-%         print([dirout '/fig_mfbdualcalib_' mouse{i}], '-dpng', '-r300');
-%         if ismac
-%             disp('Saving to mac');
-%         elseif isunix
-%             system(['sudo chown -R mobs ' dirout]);
-%         end
-%     end
-% end
+
+% --------------------------------------------------------------------------
+%                   M F B   b y   M O U S E
+% --------------------------------------------------------------------------
+% MFB
+for i=1:length(mouse)
+    if ok_mfb(i) 
+        supertit = [mouse{i} ': Self-stimulation during MFB calibration'];
+        figure2(1,'Color',[1 1 1], 'rend','painters', ...
+            'pos',[10 10 800 1000],'Name', supertit, 'NumberTitle','off');
+        
+%         figure2(1,'Position',[0 50 600 400])
+            y = mfbnbr(i,:); %nbr stim
+            x = voltage(:); %voltage
+            idx = ~any(isnan(y),1);
+            subplot(211)
+                plot(x(idx),y(idx),'-o')
+                hold on
+                if ~isnan(voltmfbpag(i,1))
+    %                 plot((find(voltage==voltmfbpag(i,1))-1)/2,y(find(voltage==voltmfbpag(i,1))),'-s','MarkerSize',10,...
+    %                     'MarkerEdgeColor','red',...
+    %                     'MarkerFaceColor',[1 .6 .6])
+                    xline((find(voltage==voltmfbpag(i,1))-1)/2, ...
+                        'Color','g','LineWidth',2);
+                    hold on
+                end
+
+                ylim([0 42]);
+                xlim([0 8.5]);
+                title(['Mouse ' mouse{i} ': Self-stimulation during MFB calibration'])
+                xlabel('MFB voltage') 
+                ylabel('Nbr of self-stimulation')
+                makepretty_erc
+        if ok_dual(i)
+                subplot(212)
+        %         figure2(1,'Position',[0 50 600 400])
+                    y = dualnbr(i,:); %nbr stim
+                    x = voltage(:); %voltage
+                    idx = ~any(isnan(y),1);
+
+                    plot(x(idx),y(idx),'-o')
+                    hold on
+                    if ~isnan(voltmfbpag(i,1))
+        %                 plot((find(voltage==voltmfbpag(i,2))-1)/2,y(find(voltage==voltmfbpag(i,2))),'-s','MarkerSize',10,...
+        %                     'MarkerEdgeColor','red',...
+        %                     'MarkerFaceColor',[1 .6 .6])
+                        xline((find(voltage==voltmfbpag(i,2))-1)/2, ...
+                            'Color','r','LineWidth',2);
+                        hold on
+                    end
+
+                    ylim([0 42]);
+                    xlim([0 8.5]);
+                    title(['Mouse ' mouse{i} ': Self-stimulation during dual stimultion (MFB+PAG)'])
+                    xlabel('PAG voltage') 
+                    ylabel('Nbr of self-stimulation')
+                    makepretty_erc
+        end
+        print([dirout '/fig_mfbdualcalib_' mouse{i}], '-dpng', '-r300');
+        if ismac
+            disp('Saving to mac');
+        elseif isunix
+            system(['sudo chown -R mobs ' dirout]);
+        end
+    end
+
+end
 
 %--------------------------------------------------------------------------
 %                            M F B
@@ -367,7 +368,9 @@ figure2(1,'Color',[1 1 1], 'rend','painters', ...
         ylabel('Nbr of self-stimulation')
         if exist('mrk','var')
             for i=1:length(mrk)
-                mrk{i}.Annotation.LegendInformation.IconDisplayStyle = 'off';
+                if ~isempty(mrk{i})
+                    mrk{i}.Annotation.LegendInformation.IconDisplayStyle = 'off';
+                end
             end
             legend(mouse{find(ok_mfb)}, 'Location','westoutside')
         end
@@ -383,7 +386,7 @@ figure2(1,'Color',[1 1 1], 'rend','painters', ...
 
             plot(x(idx),y(idx),'-o','LineWidth',.5,'color',randomColors(i,:))
             hold on
-                if isnan(y(find(voltage==voltmfbpag(i,2))))
+%                 if isnan(y(find(voltage==voltmfbpag(i,2))))
                     % this part interpolate y value if there was no trial
                     % at the chosen voltage. 
                     for j=find(voltage==voltmfbpag(i,2))-1:-1:1
@@ -398,18 +401,16 @@ figure2(1,'Color',[1 1 1], 'rend','painters', ...
                             break
                         end
                     end
-                    yy = interp1([prev(1,1) nex(1,1)], [prev(1,2) nex(1,2)], find(voltage==voltmfbpag(i,2)), 'linear', 'extrap');
-                    mrk{i} = plot((find(voltage==voltmfbpag(i,2))-1)/2,yy, ...
-                        '-o','MarkerSize',14,...
-                        'color',randomColors(i,:));
-                else
-                    % if data exist (default)
-                    mrk{i} = plot((find(voltage==voltmfbpag(i,2))-1)/2,y(find(voltage==voltmfbpag(i,2))), ...
-                        '-o','MarkerSize',14,...
-                        'color',randomColors(i,:));
-                end
-            
-            
+%                     yy = interp1([prev(1,1) nex(1,1)], [prev(1,2) nex(1,2)], find(voltage==voltmfbpag(i,2)), 'linear', 'extrap');
+%                     mrk{i} = plot((find(voltage==voltmfbpag(i,2))-1)/2,yy, ...
+%                         '-o','MarkerSize',14,...
+%                         'color',randomColors(i,:));
+%                 else
+%                     % if data exist (default)
+%                     mrk{i} = plot((find(voltage==voltmfbpag(i,2))-1)/2,y(find(voltage==voltmfbpag(i,2))), ...
+%                         '-o','MarkerSize',14,...
+%                         'color',randomColors(i,:));
+%                 end
         end
     end
     ylim([0 43]);
@@ -443,6 +444,7 @@ subplot(2,20,13:20)
 
             plot(x(idx),y(idx),'-o','color',randomColors(i,:))
             hold on
+            xline(voltmfbpag(i,2),'Color',randomColors(i,:))
         end
     end
     ylim([0 43]);
@@ -475,8 +477,8 @@ subplot(2,20,33:40)
     makepretty_erc
    
 print([dirout '/global_mfbpag_calibration'], '-dpng', '-r300');  
-        if ismac
-            disp('Saving to mac');
-        elseif isunix
-            system(['sudo chown -R mobs ' dirout]);
-        end    
+    if ismac
+        disp('Saving to mac');
+    elseif isunix
+        system(['sudo chown -R mobs ' dirout]);
+    end    
