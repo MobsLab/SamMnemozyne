@@ -1,11 +1,21 @@
 
-%% Script correcting behavRessources to match a desired length (SHORTHEN IT)
-clear all
+function fix_shorten_behavResources(dur)
+
+% Script correcting behavRessources to match a desired length (SHORTHEN IT)
+% makes a copy of your original behavResources adding "_old" as suffixe.
+% This script is useful if your ephys recording crashed before the end but
+% the .dat is intact. 
+%
+%       dur         time in SECONDS when the recording should stop
+%
+% written by SL - 2020
+
+disp('Backing up old behavResources.mat')
+copyfile('behavResources.mat','behavResources_old.mat');
 
 load('behavResources.mat')
 
 % recording duration
-dur = 5062.824;
 durts = intervalSet(1,dur*1e4);
 
 % find end position
