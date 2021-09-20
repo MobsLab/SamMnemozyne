@@ -225,6 +225,7 @@ if ~isempty(InputInfo.channel_deep) && ~isempty(InputInfo.channel_sup)
     
     %resample & filter & positive value
     EEGsleepDiff = ResampleTSD(tsd(Range(LFPdeep),Data(LFPdeep) - Factor*Data(LFPsup)),100);
+    EEGsleepDiff = Restrict(EEGsleepDiff,SWSEpoch-TotalNoiseEpoch);
     Filt_diff = FilterLFP(EEGsleepDiff, InputInfo.freq_delta, 1024);
     pos_filtdiff = max(Data(Filt_diff),0);
     %stdev
