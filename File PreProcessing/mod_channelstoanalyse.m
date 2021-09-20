@@ -208,7 +208,7 @@ for i = 1:2:length(varargin)
             end
             channel=nonhpc;
             save([pwd '/ChannelsToAnalyse/nonHPC.mat'],'channel');
-            if ~isnumeric(PFCx_spindle) 
+            if ~isnumeric(nonhpc) 
                 error('Incorrect value for property ''nonHPC''.');
             end  
          otherwise
