@@ -1,6 +1,10 @@
 function make_sleepscoring_event 
-
-load('SleepScoring_OBGamma.mat','sleep_array');
+try
+    load('SleepScoring_OBGamma.mat','sleep_array');
+catch
+    load('SleepScoring_Accelero.mat','sleep_array');
+end
+    
 if ~exist('sleep_array','var')
     make_sleepscoringarray
 end
