@@ -58,7 +58,7 @@ sav = true;
 overwrite = false;
 
 % Do you want to save a figure?
-savfig = true;
+savfig = false;
 
 % t = char(datetime('now','Format','y-MM-d'));
 % Paths and names to save
@@ -68,7 +68,7 @@ if ~exist(pathfig,'dir')
     mkdir(pathfig);
 end
 % Mice in the analysis
-nmouse = [168];
+nmouse = [1168];
 
 % Paths retrieved
 % Dir = PathForExperimentsERC_Dima('UMazePAG'); 
@@ -127,7 +127,7 @@ for i=1:length(Dir.path)
     end
     
     spikes{i} = load([Dir.path{i}{1} '/SpikeData.mat']);
-    behav{i} = load([Dir.path{i}{1} '/behavResources.mat'], 'SessionEpoch','AlignedXtsd','AlignedYtsd','CleanVtsd','AlignedXtsd','AlignedYtsd','Vtsd');
+    behav{i} = load([Dir.path{i}{1} '/behavResources.mat'], 'SessionEpoch','AlignedXtsd','AlignedYtsd','Vtsd');
     
     if EpochLong
         try
@@ -156,7 +156,7 @@ for i=1:length(Dir.path)
         UMazeEpoch{i} = behav{i}.SessionEpoch.Hab;
     end
     
-    LocomotionEpoch{i} = thresholdIntervals(tsd(Range(behav{i}.CleanVtsd),movmedian(Data(behav{i}.CleanVtsd),5)),...
+    LocomotionEpoch{i} = thresholdIntervals(tsd(Range(behav{i}.Vtsd),movmedian(Data(behav{i}.Vtsd),5)),...
         speed_thresh,'Direction','Above');
     
     UMazeMovingEpoch{i} = and(UMazeEpoch{i}, LocomotionEpoch{i});
