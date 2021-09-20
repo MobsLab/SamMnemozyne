@@ -1,4 +1,4 @@
-function [figH_ind figH] = BehaviorERC_SL_v3(expe,Mice_to_analyze,fixtrial,recompute)
+function [figH_ind figH] = BehaviorERC_SL_v3(expe,Mice_to_analyze,numexpe,fixtrial,recompute)
 %BehaviorERC - Plot basic behavior comparisons of ERC experiment avergaed across mice.
 %
 % Plot occupance in the shock zone in the PreTests vs PostTests
@@ -28,26 +28,25 @@ rmpath([dropbox '\DataSL\Matlab_scripts\working functions\generic\eeglab\sccn-ee
 
 %-------------- RUNNNING PARAMETERS -----------
 old = 0;
-sav = 0;
 
 %-------------- CHOOSE FIGURE TO OUTPUT ----------
 % per mouse
-dirspeed = 0; %Trajectories with direction and speed analyses 
-trajdyn = 0; % Trajectories + barplot + zone dynamics 
-firstentry = 0; % 1st entry barplot per mouse
-trajoccup = 0; % trajectories and mean occupancy
+dirspeed = 1; %Trajectories with direction and speed analyses 
+trajdyn = 1; % Trajectories + barplot + zone dynamics 
+firstentry = 1; % 1st entry barplot per mouse
+trajoccup = 1; % trajectories and mean occupancy
 
 globalspeed =0;
 globalstats = 0; % global statistiques (not complete)
 heatmaps = 0; % heatmaps all mice
-traj_all = 1; %trajectories all mice
+traj_all = 0; %trajectories all mice
 finalfig = 0;
 heatstat = 0;
 
 %--------------- GET DIRECTORIES-------------------
 % Dir = PathForExperimentsERC_SL(expe);
 Dir = PathForExperimentsERC_SL(expe);
-Dir = RestrictPathForExperiment(Dir,'nMice', Mice_to_analyze);
+Dir = RestrictPathForExperiment(Dir,'nMice', unique(Mice_to_analyze));
 
 %-------------- MAP PARAMETERS -----------
 freqVideo=15;       %frame rate
@@ -98,8 +97,12 @@ fun = @(block_struct) mean2(block_struct.data);
 
 
 %% Get data
+ii=1;
 for i = 1:length(Dir.path)
-    a{i} = load([Dir.path{i}{1} '/behavResources.mat'], 'behavResources');
+    for iexp=1:length(Dir.path{i})
+        a{ii} = load([Dir.path{i}{iexp} '/behavResources.mat'], 'behavResources');
+        ii=ii+1;
+    end
 end
 
 %% Set sessions
@@ -349,7 +352,7 @@ Pre_VZmean_std = std(VZmean_pre,0,2);
 Post_VZmean_mean = mean(VZmean_post,2);
 Post_VZmean_std = std(VZmean_post,0,2);
 % Wilcoxon test
-p_VZmean_pre_post = signrank(Pre_VZmean_mean, Post_VZmean_mean); % not used for now
+% p_VZmean_pre_post = signrank(Pre_VZmean_mean, Post_VZmean_mean); % not used for now
 
 %% GET OCCUPANCY DATA
 
@@ -484,8 +487,12 @@ end
 
 % DIRECTION and SPEED
 if dirspeed || globalspeed
+    ii=0;
     for i=1:length(a)
-        load([Dir.path{i}{1} '/behavResources.mat'], 'SpeedDir');
+        if numexpe(i)<2
+            ii=ii+1;
+        end
+        load([Dir.path{ii}{numexpe(i)} '/behavResources.mat'], 'SpeedDir');
         if ~exist('SpeedDir','var') || recompute
             %Pre-tests
             for k=1:length(id_Pre{i})
@@ -531,7 +538,7 @@ if dirspeed || globalspeed
             save([Dir.path{i}{1} '/behavResources.mat'], 'SpeedDir','-append');
             clear SpeedDir
         else
-            load([Dir.path{i}{1} '/behavResources.mat'], 'SpeedDir');
+            load([Dir.path{ii}{numexpe(i)} '/behavResources.mat'], 'SpeedDir');
             sd{i} = SpeedDir;
             allmean_gr(i,1:3,1:2) = sd{i}.all_mean;
         end
@@ -745,7 +752,7 @@ for i=1:length(a)
         
         % occupancy bar plot
             subplot(5,12,1:4)
-                [p_occ,h_occ, her_occ] = PlotErrorBarN_DB(datpre*100,...
+                [p_occ,h_occ, her_occ] = PlotErrorBarN_SL(datpre*100,...
                     'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
                 h_occ.FaceColor = 'flat';
                 h_occ.CData([2:3:nbprepost(i)*3-1],:) = repmat([1 1 1],nbprepost(i),1);
@@ -760,7 +767,7 @@ for i=1:length(a)
                 title('Pre-tests')
             
             subplot(5,12,5:8)          
-                [p_occ,h_occ, her_occ] = PlotErrorBarN_DB(datcond*100,...
+                [p_occ,h_occ, her_occ] = PlotErrorBarN_SL(datcond*100,...
                     'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
                 h_occ.FaceColor = 'flat';
                 h_occ.CData([2:3:nbcond{i}*3-1],:) = repmat([1 1 1],nbcond{i},1);
@@ -775,7 +782,7 @@ for i=1:length(a)
                 title('Cond')
             
             subplot(5,12,9:12)     
-                [p_occ,h_occ, her_occ] = PlotErrorBarN_DB(datpost*100,...
+                [p_occ,h_occ, her_occ] = PlotErrorBarN_SL(datpost*100,...
                     'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
                 h_occ.FaceColor = 'flat';
                 h_occ.CData([2:3:nbprepost(i)*3-1],:) = repmat([1 1 1],nbprepost(i),1);
@@ -1088,7 +1095,7 @@ for i=1:length(a)
 
             % Barplots
                 subplot(3,3,4)
-                    [p_occ,h_occ, her_occ] = PlotErrorBarN_DB([squeeze(Pre_Occup(i,1:nbprepost(i),1))'*100 ...
+                    [p_occ,h_occ, her_occ] = PlotErrorBarN_SL([squeeze(Pre_Occup(i,1:nbprepost(i),1))'*100 ...
                         squeeze(Pre_Occup(i,1:nbprepost(i),2))'*100],...
                         'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
                     h_occ.FaceColor = 'flat';
@@ -1103,10 +1110,10 @@ for i=1:length(a)
                     ylim([0 100])
                 if cond
                     subplot(3,3,5)
-                        [p_occ,h_occ, her_occ] = PlotErrorBarN_DB([squeeze(Cond_Occup(i,1:nbcond{i},1))'*100 squeeze(Cond_Occup(i,1:nbcond{i},2))'*100],...
+                        [p_occ,h_occ, her_occ] = PlotErrorBarN_SL([squeeze(Cond_Occup(i,1:nbcond{i},1))'*100 squeeze(Cond_Occup(i,1:nbcond{i},2))'*100],...
                             'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
                         h_occ.FaceColor = 'flat';
-                        h_occ.CData(2,:) = [1 1 1];
+                    h_occ.CData(2,:) = [1 1 1];
                         set(gca,'Xtick',[1:2],'XtickLabel',{' Stim \newline zone ', ' No-stim \newline zone '});
                         set(gca, 'FontSize', 14);
                         set(gca, 'LineWidth', 1);
@@ -1118,7 +1125,7 @@ for i=1:length(a)
                 end
 
                 subplot(3,3,6)
-                    [p_occ,h_occ, her_occ] = PlotErrorBarN_DB([squeeze(Post_Occup(i,1:nbprepost(i),1))'*100 ...
+                    [p_occ,h_occ, her_occ] = PlotErrorBarN_SL([squeeze(Post_Occup(i,1:nbprepost(i),1))'*100 ...
                         squeeze(Post_Occup(i,1:nbprepost(i),2))'*100],...
                         'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
                     h_occ.FaceColor = 'flat';
@@ -1159,7 +1166,7 @@ for i=1:length(a)
                     nbbars = 8*3;
                 end
                 subplot(3,3,7)
-                    [p_occ,h_occ, her_occ] = PlotErrorBarN_DB(datpre*100,...
+                    [p_occ,h_occ, her_occ] = PlotErrorBarN_SL(datpre*100,...
                         'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
                     h_occ.FaceColor = 'flat';
                     h_occ.CData([2:3:nbprepost(i)*3-1],:) = repmat([1 1 1],nbprepost(i),1);
@@ -1174,7 +1181,7 @@ for i=1:length(a)
                 
                 if cond
                     subplot(3,3,8)
-                        [p_occ,h_occ, her_occ] = PlotErrorBarN_DB(datcond*100,...
+                        [p_occ,h_occ, her_occ] = PlotErrorBarN_SL(datcond*100,...
                             'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
                         h_occ.FaceColor = 'flat';
                         h_occ.CData([2:3:nbcond{i}*3-1],:) = repmat([1 1 1],nbcond{i},1);
@@ -1189,7 +1196,7 @@ for i=1:length(a)
                 end
 
                 subplot(3,3,9)
-                    [p_occ,h_occ, her_occ] = PlotErrorBarN_DB(datpost*100,...
+                    [p_occ,h_occ, her_occ] = PlotErrorBarN_SL(datpost*100,...
                         'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
                     h_occ.FaceColor = 'flat';
                     h_occ.CData([2:3:nbprepost(i)*3-1],:) = repmat([1 1 1],nbprepost(i),1);
@@ -1251,7 +1258,7 @@ if globalspeed
             makepretty_erc 
 
  end
-        
+        trajoccup = 0;
 if globalstats
     figH.globalstats = figure('units', 'normalized', 'outerposition', [0 0 0.65 0.65]);
         Occupancy_Axes = axes('position', [0.07 0.55 0.41 0.41]);
@@ -1647,7 +1654,7 @@ if finalfig
         
         voidtmp = nan(length(Dir.path),1);    
         subplot(1,4,4)
-            [p_occ,h_occ, her_occ] = PlotErrorBarN_DB([Pre_Occup_stim_mean*100  Cond_Occup_stim_mean*100 Post_Occup_stim_mean*100],...
+            [p_occ,h_occ, her_occ] = PlotErrorBarN_SL([Pre_Occup_stim_mean*100  Cond_Occup_stim_mean*100 Post_Occup_stim_mean*100],...
                 'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
             set(gca,'Xtick',[1:3],'XtickLabel',{'Pre','Cond','Post',});
             set(gca, 'FontSize', 12);
@@ -1666,7 +1673,7 @@ end
 %--------------------------------------------------------------------------
 if heatstat
     % downscale the resolution of the maps 
-    xx = [16];  % factor of downscaling (if multiple inputed will create one figure for each
+    xx = [32];  % factor of downscaling (if multiple inputed will create one figure for each
     xorg = sizeMapx;
     yorg = sizeMapy;
     pre = occup_pre_glob;
@@ -1778,7 +1785,7 @@ if heatstat
         %% Plot figures    
 
         % Activity figure
-        supertit = ['Occupancy by session: ' num2str(sizered) 'x' num2str(sizered) ' bins'];
+        supertit = ['Occupancy by session (downscale factor: ' num2str(sizered) ')'];
         figH.heatstat = figure('Color',[1 1 1], 'rend','painters','pos',[10 10 1550 800],'Name',supertit)
 
             subplot(2,9,1:3), imagesc(occup_pre_glob), axis xy
@@ -1853,14 +1860,17 @@ if heatstat
                 % stim + no-stim zones
                 %*-------------
 
-            voidtmp = nan(length(Dir.path),1);    
+            voidtmp = nan(length(Mice_to_analyze),1);    
             subplot(2,9,15:17)
-                [p_occ,h_occ, her_occ] = PlotErrorBarN_DB([Pre_Occup_stim_mean*100 Pre_Occup_nostim_mean*100 voidtmp  Cond_Occup_stim_mean*100 Cond_Occup_nostim_mean*100 voidtmp Post_Occup_stim_mean*100 Post_Occup_nostim_mean*100],...
-                    'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0);
+                [p_occ,h_occ, her_occ] = PlotErrorBarN_SL([Pre_Occup_stim_mean*100 Pre_Occup_nostim_mean*100 voidtmp  Cond_Occup_stim_mean*100 Cond_Occup_nostim_mean*100 voidtmp Post_Occup_stim_mean*100 Post_Occup_nostim_mean*100],...
+                    'barcolors', [0 0 0], 'barwidth', 0.6, 'newfig', 0, 'showpoints',0,'showsigstar','none');
                 set(gca,'Xtick',[1:8],'XtickLabel',{'        Pre', '','',...
                     '        Cond', '','', ...
                     '        Post', ''});
                 h_occ.FaceColor = 'flat';
+                h_occ.CData(1,:) = [0 0 0];
+                h_occ.CData(4,:) = [0 0 0];
+                h_occ.CData(7,:) = [0 0 0];
                 h_occ.CData(2,:) = [1 1 1];
                 h_occ.CData(5,:) = [1 1 1];
                 h_occ.CData(8,:) = [1 1 1];
