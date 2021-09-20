@@ -133,7 +133,11 @@ clrs = [clrs_default; color_extra];
 %                              SECTION
 %                         L O A D    D A T A 
 % -------------------------------------------------------------------------
-load('sSpindles.mat','M_thr','T_thr');
+try
+    load('sSpindles.mat','M_thr','T_thr');
+catch
+    warning('No sSpindles.mat file. Proceeding with creation.')
+end
 if ~exist('M_thr','var')
     if strcmpi(scoring,'accelero')
         try
@@ -162,10 +166,12 @@ if ~exist('M_thr','var')
 
     %load channel
     prefixe = ['ChannelsToAnalyse/' structure '_' ];
-
+    channel=[];
     load([prefixe 'spindle']);
+    
 
     %LFP tsd
+    LFP=[];
     eval(['load LFPData/LFP',num2str(channel)])
 
     LFP_spindles = LFP;
