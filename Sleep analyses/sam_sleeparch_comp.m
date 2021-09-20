@@ -1,4 +1,4 @@
-function sam_sleeparch_comp
+function sam_sleeparch_comp(expe,idMice)
 
 %==========================================================================
 % Details: 
@@ -25,14 +25,14 @@ function sam_sleeparch_comp
 dir_out = [dropbox '/DataSL/StimMFBWake/sleep_architecture/' date '/'];
 
 % Numbers of mice to run analysis on
-% Mice_to_analyze = [882 941]; % MFBStimWake
-Mice_to_analyze = [117]; % FirstExploNew
+% idMice = [882 941]; % MFBStimWake
+% idMice = [117]; % FirstExploNew
 
 
 % Get directories
-Dir = PathForExperimentsERC_SL('StimMFBWake');
+Dir = PathForExperimentsERC(expe);
 % Dir = PathForExperimentsERC_SL('Reversal');
-Dir = RestrictPathForExperiment(Dir,'nMice', Mice_to_analyze);
+Dir = RestrictPathForExperiment(Dir,'nMice', idMice);
 
 %set folders
 % [parentdir,~,~]=fileparts(pwd);
@@ -59,7 +59,7 @@ set(0,'defaultAxesFontSize',12)
 %#####################################################################
 
 for i = 1:length(Dir.path)
-    disp(['--- Processing mouse #' num2str(Mice_to_analyze(i)) '...']);
+    disp(['--- Processing mouse #' num2str(idMice(i)) '...']);
     %% Get Data
     % load working variables
     Session{i} = load([Dir.path{i}{1} 'behavResources.mat'], 'SessionEpoch');
@@ -114,11 +114,13 @@ end %loop mouse
 
 supertit = 'Sleep stages percentage during sessions';
 figure('Color',[1 1 1], 'rend','painters','pos',[1 1 1600 400],'Name', supertit, 'NumberTitle','off')
-        
+    sgt = sgtitle(['Mouse ' num2str(idMice(i))],'FontSize', 24);   
     subplot(1,3,1)
-        [p,h, her] = PlotErrorBarN_SL([pre_wake_perc' post_wake_perc'],...
+        [~,h,her] = PlotErrorBarN_SL([pre_wake_perc' post_wake_perc'],...
                          'barwidth', 0.6, 'newfig', 0,...
                         'colorpoints',1,'barcolors',[.3 .3 .3]);
+            h.FaceColor = 'flat';
+            h.CData(1,:) = [0 0 0]; h.CData(2,:) = [1 1 1];
         %ylim([0 maxy_all+.15*maxy_all]);
         set(gca,'Xtick',[1:2],'XtickLabel',{'PreSleep', 'PostSleep'});
         set(gca, 'FontSize', 14);
@@ -129,9 +131,11 @@ figure('Color',[1 1 1], 'rend','painters','pos',[1 1 1600 400],'Name', supertit,
         title('WAKE', 'FontSize', 18);
 
     subplot(1,3,2)
-        [p,h, her] = PlotErrorBarN_SL([pre_nrem_perc' post_nrem_perc'],...
+        [~,h, her] = PlotErrorBarN_SL([pre_nrem_perc' post_nrem_perc'],...
                         'barwidth', 0.6, 'newfig', 0,...
                         'colorpoints',1,'barcolors',[.3 .3 .3]);
+            h.FaceColor = 'flat';
+            h.CData(1,:) = [0 0 0]; h.CData(2,:) = [1 1 1];
         %ylim([0 maxy_all+.15*maxy_all]);
         set(gca,'Xtick',[1:2],'XtickLabel',{'PreSleep', 'PostSleep'});
         set(gca, 'FontSize', 14);
@@ -142,9 +146,11 @@ figure('Color',[1 1 1], 'rend','painters','pos',[1 1 1600 400],'Name', supertit,
         title('NREM', 'FontSize', 18);
         
     subplot(1,3,3)
-        [p,h, her] = PlotErrorBarN_SL([pre_rem_perc' post_rem_perc'],...
+        [~,h, her] = PlotErrorBarN_SL([pre_rem_perc' post_rem_perc'],...
                         'barwidth', 0.6, 'newfig', 0,...
                         'colorpoints',1,'barcolors',[.3 .3 .3]);
+            h.FaceColor = 'flat';
+            h.CData(1,:) = [0 0 0]; h.CData(2,:) = [1 1 1];
         %ylim([0 maxy_all+.15*maxy_all]);
         set(gca,'Xtick',[1:2],'XtickLabel',{'PreSleep', 'PostSleep'});
         set(gca, 'FontSize', 14);
