@@ -35,15 +35,10 @@ for isuj = 1:length(Dir.path)
         for itrial=1:length(id{isess})
             disp(['Session ' sessNames{isess} ', trial #' num2str(itrial)])
             try
-                datlin = Data(behavResources(id{isess}(itrial)).CleanLinearDist);
-                clean=1;
+                datlin = Data(behavResources(id{isess}(itrial)).LinearDist);
             catch
-                try
-                    datlin = Data(behavResources(id{isess}(itrial)).LinearDist);
-                catch
-                    warning('NO LINEAR DATA');
-                    skip=1;
-                end
+                warning('NO LINEAR DATA');
+                skip=1;
             end
             if ~skip
                 DirLinear_tmp(1)=1;
@@ -64,15 +59,9 @@ for isuj = 1:length(Dir.path)
                 end
                 DirLinear = DirLinear_tmp';
                 % create data var
-                if clean
-                    behavResources(id{isess}(itrial)).DirLinear = ...
-                        tsd(Range(behavResources(id{isess}(itrial)).CleanLinearDist), ...
-                        DirLinear);
-                else
-                    behavResources(id{isess}(itrial)).DirLinear = ...
-                        tsd(Range(behavResources(id{isess}(itrial)).LinearDist), ...
-                        DirLinear);
-                end
+                behavResources(id{isess}(itrial)).DirLinear = ...
+                    tsd(Range(behavResources(id{isess}(itrial)).LinearDist), ...
+                    DirLinear);
                 % set and create epoch var
                 DirEpoch{1} = thresholdIntervals(behavResources(id{isess}(itrial)).DirLinear,2.5, ...
                     'Direction','Above');
