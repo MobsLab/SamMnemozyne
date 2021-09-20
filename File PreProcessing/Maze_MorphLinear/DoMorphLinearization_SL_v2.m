@@ -13,19 +13,19 @@ for isess = 1:length(sess)
     outPath = FindBehav.folder;
     disp(['Processing' sess{isess}]);
     % Morphing
-    load('behavResources.mat','CleanAlignedXtsd');
-    if ~exist('CleanAlignedXtsd','var')
+    load('behavResources.mat','AlignedXtsd');
+    if ~exist('AlignedXtsd','var')
         % Align
         load behavResources.mat  
-        [CleanAlignedXtsd,CleanAlignedYtsd,ZoneEpochAligned,XYOutput] = MorphMazeToSingleShape_SL(CleanXtsd,CleanYtsd,...
+        [AlignedXtsd,AlignedYtsd,ZoneEpochAligned,XYOutput] = MorphMazeToSingleShape_SL(Xtsd,Ytsd,...
             Zone{1},ref,Ratio_IMAonREAL);
-        save('behavResources.mat', 'CleanAlignedXtsd', 'CleanAlignedYtsd', 'ZoneEpochAligned', 'XYOutput',  '-append');
+        save('behavResources.mat', 'AlignedXtsd', 'AlignedYtsd', 'ZoneEpochAligned', 'XYOutput',  '-append');
         disp(['Morphing on ' sess{isess} ' done.']);
         close all
     else
         disp('Alignement already done.');
     end
-    clear CleanAlignedXtsd CleanAlignedYtsd 'ZoneEpochAligned' 'XYOutput';
+    clear AlignedXtsd AlignedYtsd 'ZoneEpochAligned' 'XYOutput';
 
     % Linear
     load('behavResources.mat','LinearDist')
@@ -36,13 +36,13 @@ for isess = 1:length(sess)
         curvexy=ginput(4);
         clf
 
-        mapxy=[Data(CleanYtsd)';Data(CleanXtsd)']';
+        mapxy=[Data(Ytsd)';Data(Xtsd)']';
         [xy,distance,t] = distance2curve(curvexy,mapxy*Ratio_IMAonREAL,'linear');
 
         subplot(211)
         imagesc(mask+Zone{1})
         hold on
-        plot(Data(CleanYtsd)'*Ratio_IMAonREAL,Data(CleanXtsd)'*Ratio_IMAonREAL)
+        plot(Data(Ytsd)'*Ratio_IMAonREAL,Data(Xtsd)'*Ratio_IMAonREAL)
         subplot(212)
         plot(t), ylim([0 1])
 
@@ -50,14 +50,14 @@ for isess = 1:length(sess)
         saveFigure(gcf,'lineartraj', outPath);
         close(gcf);
 
-        LinearDist=tsd(Range(CleanXtsd),t);
+        LinearDist=tsd(Range(Xtsd),t);
 
         save('behavResources.mat', 'LinearDist','-append');
         close all
     else
         disp('Linear config already done.');
     end
-    clear LinearDist CleanAlignedXtsd
+    clear LinearDist AlignedXtsd
     cd(Dir) 
 end
 end
