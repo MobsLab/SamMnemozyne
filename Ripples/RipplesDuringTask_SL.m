@@ -1,4 +1,4 @@
-function RipplesDuringTask_SL(expe, subj)
+function RipplesDuringTask_SL(expe, subj, numexpe)
 
 %==========================================================================
 % Details: Output details (density, amplitude, duration) of ripples during
@@ -36,7 +36,7 @@ if ~exist(dir_out,'dir')
 end
 
 Dir = PathForExperimentsERC_SL(expe);
-Dir = RestrictPathForExperiment(Dir, 'nMice', subj);
+Dir = RestrictPathForExperiment(Dir, 'nMice', unique(subj));
 
 
 % Set session names to be compared (for simplicity they will marked 
@@ -52,25 +52,30 @@ sesscond = {'Cond1','Cond2','Cond3','Cond4','Cond5','Cond6','Cond7','Cond8'};
 % #                           M A I N
 % #
 % #####################################################################
-
+warning off
 %% Get Data
-for i = 1:length(Dir.path)
-    load([Dir.path{i}{1} 'SWR.mat'], 'ripples','dHPC_rip');
-    if exist('ripples','var')
-        if exist('dHPC_rip','var') 
-            Rip{i} = load([Dir.path{i}{1} 'SWR.mat'], 'ripples','dHPC_rip');
+i=0;
+for ii = 1:length(Dir.path)
+    for iexp=1:length(Dir.path{ii})
+        i=i+1;
+        load([Dir.path{ii}{iexp} 'SWR.mat'], 'ripples','dHPC_rip');
+        if exist('ripples','var')
+            if exist('dHPC_rip','var') 
+                Rip{i} = load([Dir.path{ii}{iexp} 'SWR.mat'], 'ripples','dHPC_rip');
+            else
+                load([Dir.path{ii}{iexp} 'SWR.mat'], 'ripples','ripples_Info');
+                Rip{i}.ripples = ripples;
+                Rip{i}.dHPC_rip = ripples_Info.channel;
+            end
         else
-            load([Dir.path{i}{1} 'SWR.mat'], 'ripples','ripples_Info');
-            Rip{i}.ripples = ripples;
+            load([Dir.path{ii}{iexp} 'SWR.mat'], 'Ripples','ripples_Info');
+            Rip{i}.ripples = Ripples;
             Rip{i}.dHPC_rip = ripples_Info.channel;
         end
-    else
-        load([Dir.path{i}{1} 'SWR.mat'], 'Ripples','ripples_Info');
-        Rip{i}.ripples = Ripples;
-        Rip{i}.dHPC_rip = ripples_Info.channel;
+        a{i} = load([Dir.path{ii}{iexp} '/behavResources.mat'], 'behavResources', 'SessionEpoch', 'ZoneEpoch','FreezeAccEpoch','Vtsd');
     end
-    a{i} = load([Dir.path{i}{1} '/behavResources.mat'], 'behavResources', 'SessionEpoch', 'ZoneEpoch','FreezeAccEpoch','CleanVtsd');
 end
+num = i;
 
 %% Find indices of PreTests and PostTest session in the structure
 id_Pre = cell(1,length(a));
@@ -108,13 +113,13 @@ ntrial_condmax = max(lncond);
 % Get speed 
 for i=1:length(a)
     for k=1:lnpre(i)
-        if ~isempty(a{i}.behavResources(id_Pre{i}(k)).CleanVtsd)
-            mvtpre{i,k} = a{i}.behavResources(id_Pre{i}(k)).CleanVtsd;  
+        if ~isempty(a{i}.behavResources(id_Pre{i}(k)).Vtsd)
+            mvtpre{i,k} = a{i}.behavResources(id_Pre{i}(k)).Vtsd;  
         else
             mvtpre{i,k} = a{i}.behavResources(id_Pre{i}(k)).Vtsd;
         end
-        if ~isempty(a{i}.behavResources(id_Post{i}(k)).CleanVtsd)
-            mvtpost{i,k} = a{i}.behavResources(id_Post{i}(k)).CleanVtsd;    
+        if ~isempty(a{i}.behavResources(id_Post{i}(k)).Vtsd)
+            mvtpost{i,k} = a{i}.behavResources(id_Post{i}(k)).Vtsd;    
         else
             mvtpost{i,k} = a{i}.behavResources(id_Post{i}(k)).Vtsd;
         end
@@ -122,8 +127,8 @@ for i=1:length(a)
 end
 for i=1:length(a)
     for k=1:lncond(i)
-        if ~isempty(a{i}.behavResources(id_Cond{i}(k)).CleanVtsd)
-            mvtcond{i,k} = a{i}.behavResources(id_Cond{i}(k)).CleanVtsd;    
+        if ~isempty(a{i}.behavResources(id_Cond{i}(k)).Vtsd)
+            mvtcond{i,k} = a{i}.behavResources(id_Cond{i}(k)).Vtsd;    
         else
             mvtcond{i,k} = a{i}.behavResources(id_Cond{i}(k)).Vtsd;
         end
@@ -137,20 +142,20 @@ for i=1:length(a)
     for k=1:length(id_Pre{i})
         for t=1:length(a{i}.behavResources(id_Pre{i}(k)).Zone)
             Pre_Occup(i,k,t)=size(a{i}.behavResources(id_Pre{i}(k)).ZoneIndices{t},1)./...
-                size(Data(a{i}.behavResources(id_Pre{i}(k)).Xtsd),1);
+                size(Data(a{i}.behavResources(id_Pre{i}(k)).AlignedXtsd),1);
         end
     end
     for k=1:length(id_Post{i})
         for t=1:length(a{i}.behavResources(id_Post{i}(k)).Zone)
             Post_Occup(i,k,t)=size(a{i}.behavResources(id_Post{i}(k)).ZoneIndices{t},1)./...
-                size(Data(a{i}.behavResources(id_Post{i}(k)).Xtsd),1);
+                size(Data(a{i}.behavResources(id_Post{i}(k)).AlignedXtsd),1);
         end
     end
     
     for k=1:length(id_Cond{i})
         for t=1:length(a{i}.behavResources(id_Cond{i}(k)).Zone)
             Cond_Occup(i,k,t)=size(a{i}.behavResources(id_Cond{i}(k)).ZoneIndices{t},1)./...
-                size(Data(a{i}.behavResources(id_Cond{i}(k)).Xtsd),1);
+                size(Data(a{i}.behavResources(id_Cond{i}(k)).AlignedXtsd),1);
         end
     end
 end
@@ -276,7 +281,7 @@ p_entnum_safe_pre_post = signrank(Pre_entnum_safe_mean, Post_entnum_safe_mean);
 
 
 %% Calculate speed in the safe zone and in the noshock + shock vs everything else
-% I skip the last point in ZoneIndices because length(Xtsd)=length(Vtsd)+1
+% I skip the last point in ZoneIndices because length(AlignedXtsd)=length(Vtsd)+1
 % - UPD 18/07/2018 - Could do length(Start(ZoneEpoch))
 for i = 1:length(a)
     for k=1:length(id_Pre{i})
@@ -344,9 +349,9 @@ Cond_VZmean_std = std(VZmean_cond,0,2);
 p_VZmean_pre_post = signrank(Pre_VZmean_mean, Post_VZmean_mean);
 
 %% Prepare intervalSets for ripples
-for isuj=1:length(Dir.path)
+for isuj=1:num
     % Locomotion threshold
-    LocomotionEpoch = thresholdIntervals(tsd(Range(a{isuj}.CleanVtsd),movmedian(Data(a{isuj}.CleanVtsd),5)) ...
+    LocomotionEpoch = thresholdIntervals(tsd(Range(a{isuj}.Vtsd),movmedian(Data(a{isuj}.Vtsd),5)) ...
         ,mvtthr,'Direction',thrdir);
     
     for itrial=1:lnpre(isuj)
@@ -399,7 +404,7 @@ for isuj=1:length(Dir.path)
 end
 
 % 
-% for isuj=1:length(Dir.path)
+% for isuj=1:num
 %     for itrial=1:lnpre(isuj)
 %         if isfield(a{isuj}.SessionEpoch,sesspre{itrial})
 %             pre_epoch{isuj,itrial} = extractfield(a{isuj}.SessionEpoch,sesspre{itrial});            
@@ -486,22 +491,22 @@ end
 
 %% Calculate ripples density in the shock zone
 %Init var
-PreRipples_Safe = cell(length(Dir.path),ntrial_premax);
-PreRipples_Safe(1:length(Dir.path),1:ntrial_premax) = {nan};
-PostRipples_Safe = cell(length(Dir.path),ntrial_premax);
-PostRipples_Safe(1:length(Dir.path),1:ntrial_premax) = {nan};
-CondRipples_Safe = cell(length(Dir.path),ntrial_condmax);
-CondRipples_Safe(1:length(Dir.path),1:ntrial_condmax) = {nan};
+PreRipples_Safe = cell(num,ntrial_premax);
+PreRipples_Safe(1:num,1:ntrial_premax) = {nan};
+PostRipples_Safe = cell(num,ntrial_premax);
+PostRipples_Safe(1:num,1:ntrial_premax) = {nan};
+CondRipples_Safe = cell(num,ntrial_condmax);
+CondRipples_Safe(1:num,1:ntrial_condmax) = {nan};
 
-PreRipples_Shock = cell(length(Dir.path),ntrial_premax);
-PreRipples_Shock(1:length(Dir.path),1:ntrial_premax) = {nan};
-PostRipples_Shock = cell(length(Dir.path),ntrial_premax);
-PostRipples_Shock(1:length(Dir.path),1:ntrial_premax) = {nan};
-CondRipples_Shock = cell(length(Dir.path),ntrial_condmax);
-CondRipples_Safe(1:length(Dir.path),1:ntrial_condmax) = {nan};
+PreRipples_Shock = cell(num,ntrial_premax);
+PreRipples_Shock(1:num,1:ntrial_premax) = {nan};
+PostRipples_Shock = cell(num,ntrial_premax);
+PostRipples_Shock(1:num,1:ntrial_premax) = {nan};
+CondRipples_Shock = cell(num,ntrial_condmax);
+CondRipples_Safe(1:num,1:ntrial_condmax) = {nan};
 
 % Extract ripples for TestPre, Cond and -Post in the safe Zone
-for i = 1:length(Dir.path)
+for i = 1:num
     ripplesPeak{i}=ts(Rip{i}.ripples(:,2)*1e4);
 %     PreRipples{i}=Restrict(ripplesPeak{i},IS_TestPre{i});
 %     PostRipples{i}=Restrict(ripplesPeak{i},IS_TestPost{i});
@@ -556,17 +561,17 @@ end
 
 %% Density calculation
 %var init
-Cond_N_norm_Shock = nan(length(Dir.path),ntrial_condmax);
-Cond_N_norm_Safe = nan(length(Dir.path),ntrial_condmax);
-Cond_N_norm_Rest = nan(length(Dir.path),ntrial_condmax);
-Pre_N_norm_Safe = nan(length(Dir.path),ntrial_premax);
-Pre_N_norm_Shock = nan(length(Dir.path),ntrial_premax);
-Pre_N_norm_Rest = nan(length(Dir.path),ntrial_premax);
-Post_N_norm_Safe = nan(length(Dir.path),ntrial_premax);
-Post_N_norm_Shock = nan(length(Dir.path),ntrial_premax);
-Post_N_norm_Rest = nan(length(Dir.path),ntrial_premax);
+Cond_N_norm_Shock = nan(num,ntrial_condmax);
+Cond_N_norm_Safe = nan(num,ntrial_condmax);
+Cond_N_norm_Rest = nan(num,ntrial_condmax);
+Pre_N_norm_Safe = nan(num,ntrial_premax);
+Pre_N_norm_Shock = nan(num,ntrial_premax);
+Pre_N_norm_Rest = nan(num,ntrial_premax);
+Post_N_norm_Safe = nan(num,ntrial_premax);
+Post_N_norm_Shock = nan(num,ntrial_premax);
+Post_N_norm_Rest = nan(num,ntrial_premax);
 
-for i=1:length(Dir.path)
+for i=1:num
     for itrial=1:lnpre(i)
     % WholeMaze
         Pre_N(i,itrial)=length(Range(PreRipples_all{i,itrial}));
@@ -717,20 +722,12 @@ end
 
 % check if mouse went into zone 
 %find ID
-Pre_entnum_shock_id = find(Pre_entnum_shock==0);
-Pre_entnum_safe_id = find(Pre_entnum_safe==0);
-Pre_N_norm_Shock(Pre_entnum_shock_id) = nan;
-Pre_N_norm_Safe(Pre_entnum_safe_id) = nan;
-
-Post_entnum_shock_id = find(Post_entnum_shock==0);
-Post_entnum_safe_id = find(Post_entnum_safe==0);
-Post_N_norm_Shock(Post_entnum_shock_id) = nan;
-Post_N_norm_Safe(Post_entnum_safe_id) = nan;
-
-Cond_entnum_shock_id = find(Cond_entnum_shock==0);
-Cond_entnum_safe_id = find(Cond_entnum_safe==0);
-Cond_N_norm_Shock(Pre_entnum_shock_id) = nan;
-Cond_N_norm_Safe(Pre_entnum_safe_id) = nan;
+Pre_N_norm_Shock(Pre_N_norm_Shock==0) = nan;
+Pre_N_norm_Safe(Pre_N_norm_Safe==0) = nan;
+Post_N_norm_Shock(Post_N_norm_Shock==0) = nan;
+Post_N_norm_Safe(Post_N_norm_Safe==0) = nan;
+Cond_N_norm_Shock(Cond_N_norm_Shock==0) = nan;
+Cond_N_norm_Safe(Cond_N_norm_Safe==0) = nan;
 
 
 % calculating means per mice across trials
@@ -772,7 +769,7 @@ clrs_default = get(gca,'colororder');
 clrs_default(end+1,1:3) = [0 0 0];
 % colororder(clrs_default);
 
-for i=1:length(Dir.path)
+for i=1:num
     
     % ripple number
     nrip(i,1) = length(Restrict(ripplesPeak{i},IS_TestPre{i}));  
@@ -1009,132 +1006,139 @@ figure
 %--------------------------------------------------------------------------
 %                    A V E R A G E    R I P P L E 	
 %--------------------------------------------------------------------------
-for i=1:length(a)
-    disp('--- processing LFP for average ripple---')
-    % get data
-    LFP_rip = load([Dir.path{i}{1} '/LFPData/LFP' num2str(Rip{i}.dHPC_rip) '.mat']);
-    LFPf=FilterLFP(LFP_rip.LFP,[120 220],1048);
-    LFPr=LFP_rip.LFP;
-    rmvt = Restrict(ripplesPeak{i},or(or(IS_TestPre{i},IS_Cond{i}),IS_TestPost{i}));
-    
-    % Plot Raw stuff
-    [M,T]=PlotRipRaw(LFPr,Data(rmvt)/1E4, [-60 60]);
-    M_task = M; T_task=T;
-    %SAVING ripraw variables to ripples.mat for later use
-    save([Dir.path{i}{1} 'SWR.mat'],'M_task','T_task','-append');
-    
-    % plot average ripple
-    supertit = ['Average ripple - M' num2str(subj(i))];
-    figure('Color',[1 1 1], 'rend','painters','pos',[10 10 1000 600],'Name', supertit, 'NumberTitle','off')  
-        shadedErrorBar([],M(:,2),M(:,3),'-b',1);
-        xlabel('Time (ms)')
-        ylabel('$${\mu}$$V')   
-        title(['M' num2str(subj(i)) ' - Average ripple (N=' num2str(length(rmvt)) ')']);        
-        xlim([1 size(M,1)])
-        set(gca, 'Xtick', 1:25:size(M,1),...
-                    'Xticklabel', num2cell([floor(M(1,1)*1000):20:ceil(M(end,1)*1000)]))   
-
-        %- save picture
-        if sav
-            print([dir_out 'M' num2str(subj(i)) '_task_average_ripple.png'], '-dpng', '-r600');
-        end  
-%--------------------------------------------------------------------------
-%                    Global figure	
-%--------------------------------------------------------------------------
-
-    supertit = ['GLOBAL FIGURE: Mouse ' num2str(subj(i))  ' - Ripple '];
-    figure('Color',[1 1 1], 'rend','painters','pos',[1 1 1200 700],'Name', supertit, 'NumberTitle','off')
-        subplot(2,3,1:2)
-            shadedErrorBar([],M(:,2),M(:,3),'-b',1);
-            xlabel('Time (ms)')
-            ylabel('$${\mu}$$V')   
-            title(['M' num2str(subj(i)) ' - Average ripple (N=' num2str(sum(nrip(i,:))) ')']);      
-            xlim([1 size(M,1)])
-            set(gca, 'Xtick', 1:25:size(M,1),...
-                        'Xticklabel', num2cell([floor(M(1,1)*1000):20:ceil(M(end,1)*1000)]))
-                    
-        subplot(2,3,4) 
-            for k=1:lnpre(i)    
-                % -- trajectories    
-                p1(k) = plot(Data(a{i}.behavResources(id_Pre{i}(k)).AlignedXtsd),...
-                    Data(a{i}.behavResources(id_Pre{i}(k)).AlignedYtsd),...
-                         'linewidth',.5,'Color',[.3 .3 .3]);  
-                hold on
-                tempX = Data(a{i}.behavResources(id_Pre{i}(k)).AlignedXtsd);
-                tempY = Data(a{i}.behavResources(id_Pre{i}(k)).AlignedYtsd);
-                riptime = Data(PreRipples_all{i,k})/1e4;
-                for irip=1:length(riptime)
-                    ripid = find(a{i}.behavResources(id_Pre{i}(k)).PosMat(:,1)>riptime(irip),1,'first');
-                    plot(tempX(ripid),tempY(ripid),...
-                        'o','Color','b','MarkerSize',10,'LineWidth',2);
-                    hold on
-                end
-                clear tempX tempY
-            end
-            axis off
-            xlim([-0.05 1.05])    
-            ylim([-0.05 1.05])
-            title(['Pre-tests (N=' num2str(nrip(i,1)) ')'])
-            % constructing the u maze
-            f_draw_umaze
-%             %legend (make legend outside of plot and subplot!)
-%             axP = get(gca,'Position');
-%             lg = legend(p1([1:lnpre(i)]),sprintfc('%d',1:lnpre),'Location','WestOutside');
-%             title(lg,'Trial #')
-%             set(gca, 'Position', axP)
+i=0;
+for ii=1:length(Dir.path)
+    for iexp=1:length(Dir.path{ii})
+        i=i+1;
+        disp('--- processing LFP for average ripple---')
+        % get data
+        LFP_rip = load([Dir.path{ii}{iexp} '/LFPData/LFP' num2str(Rip{i}.dHPC_rip) '.mat']);
+        LFPf=FilterLFP(LFP_rip.LFP,[120 220],1048);
+        LFPr=LFP_rip.LFP;
+        rmvt = Restrict(ripplesPeak{i},or(or(IS_TestPre{i},IS_Cond{i}),IS_TestPost{i}));
         
-        subplot(2,3,5) 
-            for k=1:lncond(i)   
-                % -- trajectories    
-                p2(k) = plot(Data(a{i}.behavResources(id_Cond{i}(k)).AlignedXtsd),...
-                    Data(a{i}.behavResources(id_Cond{i}(k)).AlignedYtsd),...
-                         'linewidth',.5,'Color',[.3 .3 .3]);  
-                hold on
-                tempX = Data(a{i}.behavResources(id_Cond{i}(k)).AlignedXtsd);
-                tempY = Data(a{i}.behavResources(id_Cond{i}(k)).AlignedYtsd);
-                riptime = Data(CondRipples_all{i,k})/1e4;
-                for irip=1:length(riptime)
-                    ripid = find(a{i}.behavResources(id_Cond{i}(k)).PosMat(:,1)>riptime(irip),1,'first');
-                    plot(tempX(ripid),tempY(ripid),...
-                        'o','Color','b','MarkerSize',10,'LineWidth',2);
-                    hold on
-                end
-                clear tempX tempY
-            end
-            axis off
-            xlim([-0.05 1.05])    
-            ylim([-0.05 1.05])
-            title(['Cond (N=' num2str(nrip(i,3)) ')'])   
-            % constructing the u maze
-            f_draw_umaze  
-        
+        if ~isempty(Data(rmvt))
+            % Plot Raw stuff
+            [M,T]=PlotRipRaw(LFPr,Data(rmvt)/1E4, [-60 60],'PlotFigure',0);
+            M_task = M; T_task=T;
+            %SAVING ripraw variables to ripples.mat for later use
+            save([Dir.path{ii}{iexp} 'SWR.mat'],'M_task','T_task','-append');
 
-        subplot(2,3,6) 
-            for k=1:lnpre(i)
-                % -- trajectories    
-                p3(k) = plot(Data(a{i}.behavResources(id_Post{i}(k)).AlignedXtsd),...
-                    Data(a{i}.behavResources(id_Post{i}(k)).AlignedYtsd),...
-                         'linewidth',.5,'Color',[.3 .3 .3]);  
-                hold on
-                tempX = Data(a{i}.behavResources(id_Post{i}(k)).AlignedXtsd);
-                tempY = Data(a{i}.behavResources(id_Post{i}(k)).AlignedYtsd);
-                riptime = Data(PostRipples_all{i,k})/1e4;
-                for irip=1:length(riptime)
-                    ripid = find(a{i}.behavResources(id_Post{i}(k)).PosMat(:,1)>riptime(irip),1,'first');
-                    plot(tempX(ripid),tempY(ripid),...
-                        'o','Color','b','MarkerSize',10,'LineWidth',2);
-                    hold on
-                end
-                clear tempX tempY
-            end
-            axis off
-            xlim([-0.05 1.05])    
-            ylim([-0.05 1.05])
-            title(['Post-tests (N=' num2str(nrip(i,2)) ')'])   
-            % constructing the u maze
-            f_draw_umaze
-            
-       print([dir_out 'ID_Global_Ripples' num2str(subj(i))], '-dpng', '-r600');
+%             % plot average ripple
+%             supertit = ['Average ripple - M' num2str(subj(i))];
+%             figure('Color',[1 1 1], 'rend','painters','pos',[10 10 1000 600],'Name', supertit, 'NumberTitle','off')  
+%                 shadedErrorBar([],M(:,2),M(:,3),'-b',1);
+%                 xlabel('Time (ms)')
+%                 ylabel('$${\mu}$$V')   
+%                 title(['M' num2str(subj(i)) ' - Average ripple (N=' num2str(length(rmvt)) ')']);        
+%                 xlim([1 size(M,1)])
+%                 set(gca, 'Xtick', 1:25:size(M,1),...
+%                             'Xticklabel', num2cell([floor(M(1,1)*1000):20:ceil(M(end,1)*1000)]))   
+% 
+%                 %- save picture
+%                 if sav
+%                     print([dir_out 'M' num2str(subj(i)) '_task_average_ripple.png'], '-dpng', '-r600');
+%                 end  
+        
+    %--------------------------------------------------------------------------
+    %                    Global figure	
+    %--------------------------------------------------------------------------
+
+            supertit = ['GLOBAL FIGURE: Mouse ' num2str(subj(i))  ' - Ripple '];
+            figure('Color',[1 1 1], 'rend','painters','pos',[1 1 1200 700],'Name', supertit, 'NumberTitle','off')
+                subplot(2,3,1:2)
+                    shadedErrorBar([],M(:,2),M(:,3),'-b',1);
+                    xlabel('Time (ms)')
+                    ylabel('$${\mu}$$V')   
+                    title(['M' num2str(subj(i)) ' - Average ripple (N=' num2str(sum(nrip(i,:))) ')']);      
+                    xlim([1 size(M,1)])
+                    set(gca, 'Xtick', 1:25:size(M,1),...
+                                'Xticklabel', num2cell([floor(M(1,1)*1000):20:ceil(M(end,1)*1000)]))
+
+                subplot(2,3,4) 
+                    for k=1:lnpre(i)    
+                        % -- trajectories    
+                        p1(k) = plot(Data(a{i}.behavResources(id_Pre{i}(k)).AlignedXtsd),...
+                            Data(a{i}.behavResources(id_Pre{i}(k)).AlignedYtsd),...
+                                 'linewidth',.5,'Color',[.3 .3 .3]);  
+                        hold on
+                        tempX = Data(a{i}.behavResources(id_Pre{i}(k)).AlignedXtsd);
+                        tempY = Data(a{i}.behavResources(id_Pre{i}(k)).AlignedYtsd);
+                        riptime = Data(PreRipples_all{i,k})/1e4;
+                        for irip=1:length(riptime)
+                            ripid = find(a{i}.behavResources(id_Pre{i}(k)).PosMat(:,1)>riptime(irip),1,'first');
+                            plot(tempX(ripid),tempY(ripid),...
+                                'o','Color','b','MarkerSize',10,'LineWidth',2);
+                            hold on
+                        end
+                        clear tempX tempY
+                    end
+                    axis off
+                    xlim([-0.05 1.05])    
+                    ylim([-0.05 1.05])
+                    title(['Pre-tests (N=' num2str(nrip(i,1)) ')'])
+                    % constructing the u maze
+                    f_draw_umaze
+        %             %legend (make legend outside of plot and subplot!)
+        %             axP = get(gca,'Position');
+        %             lg = legend(p1([1:lnpre(i)]),sprintfc('%d',1:lnpre),'Location','WestOutside');
+        %             title(lg,'Trial #')
+        %             set(gca, 'Position', axP)
+
+                subplot(2,3,5) 
+                    for k=1:lncond(i)   
+                        % -- trajectories    
+                        p2(k) = plot(Data(a{i}.behavResources(id_Cond{i}(k)).AlignedXtsd),...
+                            Data(a{i}.behavResources(id_Cond{i}(k)).AlignedYtsd),...
+                                 'linewidth',.5,'Color',[.3 .3 .3]);  
+                        hold on
+                        tempX = Data(a{i}.behavResources(id_Cond{i}(k)).AlignedXtsd);
+                        tempY = Data(a{i}.behavResources(id_Cond{i}(k)).AlignedYtsd);
+                        riptime = Data(CondRipples_all{i,k})/1e4;
+                        for irip=1:length(riptime)
+                            ripid = find(a{i}.behavResources(id_Cond{i}(k)).PosMat(:,1)>riptime(irip),1,'first');
+                            plot(tempX(ripid),tempY(ripid),...
+                                'o','Color','b','MarkerSize',10,'LineWidth',2);
+                            hold on
+                        end
+                        clear tempX tempY
+                    end
+                    axis off
+                    xlim([-0.05 1.05])    
+                    ylim([-0.05 1.05])
+                    title(['Cond (N=' num2str(nrip(i,3)) ')'])   
+                    % constructing the u maze
+                    f_draw_umaze  
+
+
+                subplot(2,3,6) 
+                    for k=1:lnpre(i)
+                        % -- trajectories    
+                        p3(k) = plot(Data(a{i}.behavResources(id_Post{i}(k)).AlignedXtsd),...
+                            Data(a{i}.behavResources(id_Post{i}(k)).AlignedYtsd),...
+                                 'linewidth',.5,'Color',[.3 .3 .3]);  
+                        hold on
+                        tempX = Data(a{i}.behavResources(id_Post{i}(k)).AlignedXtsd);
+                        tempY = Data(a{i}.behavResources(id_Post{i}(k)).AlignedYtsd);
+                        riptime = Data(PostRipples_all{i,k})/1e4;
+                        for irip=1:length(riptime)
+                            ripid = find(a{i}.behavResources(id_Post{i}(k)).PosMat(:,1)>riptime(irip),1,'first');
+                            plot(tempX(ripid),tempY(ripid),...
+                                'o','Color','b','MarkerSize',10,'LineWidth',2);
+                            hold on
+                        end
+                        clear tempX tempY
+                    end
+                    axis off
+                    xlim([-0.05 1.05])    
+                    ylim([-0.05 1.05])
+                    title(['Post-tests (N=' num2str(nrip(i,2)) ')'])   
+                    % constructing the u maze
+                    f_draw_umaze
+
+               print([dir_out 'ID_Global_Ripples' num2str(subj(i))], '-dpng', '-r600');
+        end
+    end
 end
 
 
