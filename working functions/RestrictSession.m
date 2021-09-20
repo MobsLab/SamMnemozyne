@@ -1,4 +1,4 @@
-function [id_sess tdat dat] = RestrictSession(workpath,session,varargin)
+function [id_sess, tdat, dat] = RestrictSession(workpath,session,varargin)
 
 
 %==========================================================================
@@ -56,31 +56,37 @@ end
 
 
 %% Get behavResources and timepoints
+ii=0;
 for isuj = 1:length(workpath.path)
     disp(['Working on subject ' num2str(isuj)])
-    disp('   .loading behavResources')
-    behav{isuj} = load([workpath.path{isuj}{1} 'behavResources.mat'], 'behavResources','SessionEpoch');
+    for iexp=1:length(workpath.path{isuj})
+        ii=ii+1;
+        disp(['   - Exp #' num2str(iexp)])
+        behav{ii} = load([workpath.path{isuj}{iexp} '/behavResources.mat'], 'behavResources','SessionEpoch');
+        disp('   .loading behavResources')
+    end
     
     % Get timepoints (interval set)
-    if isfield(behav{isuj}.SessionEpoch,session)
+    if isfield(behav{ii}.SessionEpoch,session)
         disp('   .extracting timepoints')
-        tdat{isuj} = extractfield(behav{isuj}.SessionEpoch,session);
+        tdat{ii} = extractfield(behav{ii}.SessionEpoch,session);
     else
+        
         error([session ' is not a valid session name for this expirement.']); 
     end
     
     % Get position of session
-    id_sess{isuj} = find_sessionid(behav{isuj}, session);
+    id_sess{ii} = find_sessionid(behav{ii}, session);
 
     % Get behav data
     if cmeasure
         disp('   .extracting behavioral data')
-        if isfield(behav{isuj}.behavResources(id_sess{isuj}{1}),measure)
-            dat{isuj,1} = extractfield(behav{isuj}.behavResources(id_sess{isuj}{1}),measure);
-        elseif isfield(behav{isuj}.behavResources(id_sess{isuj}),[measure num2str(ntrial)]) %check if the last increment of this session exist
+        if isfield(behav{ii}.behavResources(id_sess{ii}{1}),measure)
+            dat{ii,1} = extractfield(behav{ii}.behavResources(id_sess{ii}{1}),measure);
+        elseif isfield(behav{ii}.behavResources(id_sess{ii}),[measure num2str(ntrial)]) %check if the last increment of this session exist
             for itrial=1:ntrial
-                if isfield(behav{isuj}.behavResources(id_sess{isuj}),[measure num2str(itrial)])
-                    dat{isuj,itrial} = extractfield(behav{isuj}.behavResources(id_sess{isuj}),[measure num2str(itrial)]);
+                if isfield(behav{ii}.behavResources(id_sess{ii}),[measure num2str(itrial)])
+                    dat{ii,itrial} = extractfield(behav{ii}.behavResources(id_sess{ii}),[measure num2str(itrial)]);
                 else
                     error(['Incrementation not valid for this session.']);
                 end
@@ -88,6 +94,8 @@ for isuj = 1:length(workpath.path)
         else
             error([measure ' is not a valid measure name (in behavResources var) for this expirement.']); 
         end
+    else
+        dat{ii,1}=[];
     end    
 end
 disp('Done! Carry on.')
