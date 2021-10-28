@@ -50,14 +50,15 @@ end
 
 %% Parameters
 % Get directories
-if strcmp(expe,'StimMFBWake') || strcmp(expe,'Novel')
-    Dir = PathForExperimentsERC_SL(expe);
-elseif strcmp(expe,'UMazePAG') 
-    Dir = PathForExperimentsERC_Dima(expe);
-else    
-    warning('Exited. Verify experiment name');
-    return
-end
+Dir = PathForExperimentsERC(expe);
+% if strcmp(expe,'StimMFBWake') || strcmp(expe,'Novel')
+%     Dir = PathForExperimentsERC_SL(expe);
+% elseif strcmp(expe,'UMazePAG') 
+%     Dir = PathForExperimentsERC_Dima(expe);
+% else    
+%     warning('Exited. Verify experiment name');
+%     return
+% end
 Dir = RestrictPathForExperiment(Dir,'nMice', unique(subj));
 
 % get sessions id and timepoints
