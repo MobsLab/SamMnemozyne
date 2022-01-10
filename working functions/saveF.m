@@ -85,7 +85,7 @@ end
 
 % special case for Matlab on Linux using in root 
 if isunix
-    system(['sudo chown -R mobs /' dirPath]);
+    system(['sudo chown -R hobbes /' dirPath]);
 end
 end
 
