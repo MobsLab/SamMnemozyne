@@ -1,13 +1,3 @@
-% clear all
-% expe = 'StimMFBWake';
-% expe = 'UMazePAG';
-% 
-% subj = [792];
-% ss = 'accelero';
-% ss = 'ob';
-% 
-% thresh = [2 1];
-
 function s_launchDeltaDetect(expe,subj,ss,thresh)
 
 
@@ -21,16 +11,42 @@ function s_launchDeltaDetect(expe,subj,ss,thresh)
 %     return
 % end
 Dir = PathForExperimentsERC(expe);
+% Dir = PathForExperimentsERC_SL(expe);
 Dir = RestrictPathForExperiment(Dir,'nMice', subj);
 
 % get sessions id and timepoints
-try
-    [id_pre tdatpre] = RestrictSession(Dir,'PreSleep');  %add variable for session to call
-catch
-    [id_pre tdatpre] = RestrictSession(Dir,'BaselineSleep');
+if strcmp(expe,'BaselineSleep')
+    load([Dir.path{1}{1} 'TimeRec.mat'], 'TimeBeginRec','TimeEndRec');
+    % create pre-sleep segment (first 2hrs)
+    tdatpre{1}{1} = intervalSet(1,9000*1e4);
+    % create post-sleep segment (2hrs)
+    t1={[num2str(TimeBeginRec(1)) ':' num2str(TimeBeginRec(2)) ':' num2str(TimeBeginRec(3))]};
+    t2={'15:30:00'};
+    poststart = seconds(diff(datetime([t1;t2])))*1e4;
+    postend = poststart+(9000*1e4);
+    tdatpost{1}{1} = intervalSet(poststart,postend);   
+    %check length
+    clear t2
+    t2={[num2str(TimeEndRec(1)) ':' num2str(TimeEndRec(2)) ':' num2str(TimeEndRec(3))]};
+    totdur = seconds(diff(datetime([t1;t2])))*1e4;
+    if totdur<postend
+        disp('PostSleep session end happens after the end of the session.' );
+        disp('Check your times and/or change the start of the post sleep session in the script');
+        return
+    else
+        SleepEpochs.pre = tdatpre{1}{1};
+        SleepEpochs.post = tdatpost{1}{1};
+        save([Dir.path{1}{1} 'behavResources.mat'],'SleepEpochs','-append');
+        disp('behavResources updated');
+    end
+else
+    try
+        [id_pre, tdatpre] = RestrictSession(Dir,'PreSleep');  %add variable for session to call
+    catch
+        [id_pre, tdatpre] = RestrictSession(Dir,'BaselineSleep');
+    end
+    [id_post, tdatpost] = RestrictSession(Dir,'PostSleep');
 end
-[id_post tdatpost] = RestrictSession(Dir,'PostSleep');
-
 %% detect deltas
 [deltas_pre alldeltas_pre deltas_Info_pre] = CreateDeltaWavesSleep_epoch('recompute',1, ...
     'scoring',ss,'epoch',tdatpre{1}{1},'thresh',thresh);
