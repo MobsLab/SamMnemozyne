@@ -101,6 +101,11 @@ for i = 1:2:length(varargin)
             if ~strcmp(scoring,'ob') && ~strcmp(scoring,'accelero')
                 error('Incorrect value for property ''scoring''.');
             end
+        case 'restrict'
+            restrict = varargin{i+1};
+            if restrict~=0 && restrict ~=1
+                error('Incorrect value for property ''restrict''.');
+            end
         otherwise
             error(['Unknown property ''' num2str(varargin{i}) '''.']);
     end
@@ -147,6 +152,9 @@ end
 if ~exist('scoring','var')
     scoring='ob';
 end
+if ~exist('restrict','var')
+    restrict=0;
+end
 
 
 %load stim
@@ -162,7 +170,7 @@ end
 %% Sleep event
 disp('Detecting sleep events')
 disp(' ')
-CreateSleepSignals('recompute',recompute,'scoring',scoring,'stim',stim, ...
+CreateSleepSignals('recompute',recompute,'scoring',scoring,'stim',stim,'restrict',restrict, ...
     'down',down,'delta',delta,'rip',rip,'spindle',spindle, ...
     'ripthresh',ripthresh,'delthresh',delthresh,'spithresh',spithresh);
 
