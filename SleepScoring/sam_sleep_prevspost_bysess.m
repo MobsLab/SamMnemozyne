@@ -62,12 +62,21 @@ Dir = PathForExperimentsERC(expe);
 Dir = RestrictPathForExperiment(Dir,'nMice', unique(subj));
 
 % get sessions id and timepoints
-try
-    [id_pre tdatpre] = RestrictSession(Dir,'PreSleep');  %add variable for session to call
-catch
-    [id_pre tdatpre] = RestrictSession(Dir,'BaselineSleep');
+
+if strcmp(expe,'BaselineSleep')
+    for isubj=1:length(numexpe)
+        load([Dir.path{isubj,numexpe(isubj)}{1} 'behavResources.mat'],'SleepEpochs');
+        tdatpre{isubj,numexpe(isubj)}{1} = SleepEpochs.pre;
+        tdatpost{isubj,numexpe(isubj)}{1} = SleepEpochs.post;
+    end
+else
+    try
+        [id_pre tdatpre] = RestrictSession(Dir,'PreSleep');  %add variable for session to call
+    catch
+        [id_pre tdatpre] = RestrictSession(Dir,'BaselineSleep');
+    end
+    [id_post tdatpost] = RestrictSession(Dir,'PostSleep');
 end
-[id_post tdatpost] = RestrictSession(Dir,'PostSleep');
  
 %#####################################################################
 %#                           M A I N
