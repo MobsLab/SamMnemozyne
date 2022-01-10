@@ -3,11 +3,12 @@ clear all
 expe = 'StimMFBWake'; 
 expe = 'UMazePAG'; 
 
-mice_num = [861];
+mice_num = [1124];
 
 ss = 'accelero';
+ss = 'ob';
 
-thresh = [2 1];
+thresh = [1 .8];
 
 % path
 dirPath_sMFBW_sleep = [dropbox 'DataSL/' expe '/Sleep/' date '/'];  % folder where to save
