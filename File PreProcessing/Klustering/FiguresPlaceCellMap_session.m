@@ -88,7 +88,7 @@ if ~exist(dirPath, 'dir')
 end
 % special case for Matlab on Linux using in root 
 if isunix
-    system(['sudo chown -R mobs /' pwd]);
+    system(['sudo chown -R hobbes /' pwd]);
 end
     
 %% MAIN SCRIPT
@@ -105,6 +105,8 @@ if ~unique
             error(['The session ' session{isess} 'does not exist.']);
         end
     end
+else
+    sessEpoch = intervalSet(1,PosMat(end,1)*1e4);
 end
 
 SetCurrentSession('same');
@@ -234,27 +236,7 @@ else  % individual sessions
                     disp(['No map available for ' cellnames{i}]);
                 end
             end
-
-    %         % create global maps
-    %         if exist('map','var')
-    %             iclu=1;
-    %             for t=1:size(tetrodeChannels,2)
-    %                 if clunum(t)
-    %                     figure('Color',[1 1 1], 'rend','painters','pos',[10 10 300*clunum(t) 400])
-    %                     for i=1:clunum(t)
-    %                         subplot(1,clunum(t),i)
-    %                             if ~isempty(map{iclu})    
-    %                                 imagesc(map{1,iclu}.rate)
-    %                                 title(cellnames{iclu})
-    %                             end
-    %                         iclu=iclu+1;
-    %                     end
-    %                     if save_data
-    %                         print([pwd '/PlaceCells/' session{isess} '/SpikeGroup' num2str(t) ], '-dpng', '-r300');
-    %                     end
-    %                 end
-    %             end
-    %         end
+            % Figure
             supertit='All clusters from all tet/probes';
             H = figure2(1,'Color',[1 1 1], 'rend','painters','pos',[1 1 1800 1200],'Name', supertit, 'NumberTitle','off');
             for i=1:length(S) 
@@ -292,9 +274,7 @@ else  % individual sessions
         for i=1:length(S) 
             try
                 [map{i}, mapNS, stats{i}, px{i}, py{i}, FR{i}, xB, yB] = ... 
-                PlaceField_DB(Restrict(Restrict(S{i},LocomotionEpoch),SessionEpoch), ...
-                    Restrict(XS,SessionEpoch), ... 
-                    Restrict(YS,SessionEpoch), ... 
+                PlaceField_DB(Restrict(S{i},LocomotionEpoch),XS,YS, ... 
                     'smoothing',1.5, 'size', 50,'plotresults',0,'plotpoisson',plotfig);
                 hold on
                 mtit(cellnames{i}, 'fontsize',14, 'xoff', -.6, 'yoff', 0) %set global title for each figure (tetrode and cluster #)
