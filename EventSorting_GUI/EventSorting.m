@@ -1,33 +1,57 @@
 function EventSorting(evtType)
 
+%==========================================================================
+% Details: visiualize and manually clean events (ripples or spindles). Will
+%          create a copy of the original [SWR_original.mat] and upon changes saved a
+%          addtional .mat file named [SWRSorted.mat].
+%
+% Note: spindles is not yet finalize
+%
+% INPUTS:
+%       - evtType           ripples or spindles
+%    
+%
+% NOTES:
+%
+%   Written by Samuel Laventure - 2021/12
+%      
+%==========================================================================
+
 %% Init variables
 global ievt; ievt=1;
 global irej; irej=0;
-global evt;
+global evt; 
+global change; change=0;
 global evtName; evtName = evtType; 
 global twin; twin=2000; % time duration (1sec * 1e4) for half a window (default)
 
 %% load event data
 switch evtType
     case 'ripples'
-        if exist([pwd '/RipplesSorted.mat'],'file')
-            load([pwd '/RipplesSorted.mat']);
+        if exist([pwd '/SWRSorted.mat'],'file')
+            load([pwd '/SWRSorted.mat']);
         else
-            load([pwd '/Ripples.mat']);
+            load([pwd '/SWR.mat']);
         end
         load([pwd '/ChannelsToAnalyse/dHPC_rip.mat'],'channel');
         evt.time = ripples;
+        evt.epoch = RipplesEpoch;
+        evt.T = T;
+        evt.ts = Data(tRipples);
+        evt.mean = meanVal;
+        evt.std = stdVal;
+        evt.info = ripples_Info;
         % make a copy of original
         if ~exist('Ripples_original.mat','file')
-            copyfile('Ripples.mat','Ripples_original.mat');
+            copyfile('SWR.mat','SWR_original.mat');
         end
     case 'spindles'
-        if exist([pwd '/RipplesSorted.mat'],'file')
+        if exist([pwd '/SpindlesSorted.mat'],'file')
             load([pwd '/SpindlesSorted.mat']);
         else
             load([pwd '/Spindles.mat']);
         end
-        load([pwd '/ChannelsToAnalyse/dHPC_rip.mat'],'channel');
+        load([pwd '/ChannelsToAnalyse/PFCx_spindle.mat'],'channel');
 end
 
 evt.rejected.id = [];
@@ -90,7 +114,7 @@ brej.Text='Reject';
 % Save and Close
 bclose = uibutton(fig,'push',...
                'Position',[500, 10, 150, 40],...
-               'ButtonPushedFcn', @(btn,event) plot_btnClose(fig));
+               'ButtonPushedFcn', @(btn,event) plot_btnClose(fig,LFP));
 bclose.Text='Save & Close';
 
 %% Create sliders
@@ -162,6 +186,7 @@ function plot_btnRej(ax,LFP,lb_evtnb)
     global irej
     global twin
     global evtName
+    global change
     
     irej=irej+1;
     evt.rejected.id(irej) = ievt;
@@ -169,6 +194,12 @@ function plot_btnRej(ax,LFP,lb_evtnb)
     
     % change event var
     evt.time(ievt,:) = [];
+    st = evt.time(ievt,1)*1e4 -10; 
+    en = evt.time(ievt,3)*1e4 + 10;
+    is = intervalSet(st,en);
+    evt.epoch = evt.epoch-intervalSet(st,en);
+    evt.ts(ievt) = [];
+    change = 1;
     
     %go to next event
     if ievt<=size(evt.time,1)
@@ -182,13 +213,31 @@ function plot_btnRej(ax,LFP,lb_evtnb)
     lb_evtnb.Text = [upper(evtName) ' #:                     of ' num2str(size(evt.time,1))];
 end
 
-function plot_btnClose(fig)
+function plot_btnClose(fig,LFP)
     global evtName
-    global evt
+    global evt 
+    global change
         switch evtName
             case 'ripples'
-                ripples = evt.time;
-                save('RipplesSorted.mat','ripples','evt','-append');
+                if change
+                    ripples = evt.time;
+                    RipplesEpoch = evt.epoch;
+                    tRipples = ts(evt.ts);
+                    meanVal = evt.mean;
+                    stdVal = evt.std;
+                    ripples_Info = evt.info;
+                    % Plot Raw stuff
+                    disp('Plotting new averaged ripple...')
+                    [M,T]=PlotRipRaw(LFP, ripples(:,1:3), [-60 60],0,0);
+                    if exist('SWRSorted.mat','file')
+                        save('SWRSorted.mat','ripples','RipplesEpoch', ...
+                            'tRipples','M','T','evt','-append');
+                    else
+                        save('SWRSorted.mat','ripples','RipplesEpoch', ...
+                            'tRipples','M','T','meanVal','stdVal', ...
+                            'ripples_Info','evt');
+                    end
+                end
             case 'spindles'
                 Spindles = evt.time;
                 save('SpindlesSorted.mat','ripples','evt','-append');
