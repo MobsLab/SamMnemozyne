@@ -35,7 +35,7 @@ if ~exist(dir_out,'dir')
     mkdir(dir_out);
 end
 
-Dir = PathForExperimentsERC_SL(expe);
+Dir = PathForExperimentsERC(expe);
 Dir = RestrictPathForExperiment(Dir, 'nMice', unique(subj));
 
 
