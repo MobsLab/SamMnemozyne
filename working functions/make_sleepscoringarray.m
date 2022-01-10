@@ -27,7 +27,7 @@ try
 
     sleep_array = sleep_all;
     % save it in SleepScoring .mat file
-    save('SleepScoring_OBGamma.mat','sleep_array','-append')
+    save('SleepScoring_OBGamma.mat','sleep_array','-append','-v7.3')
     disp('OBGamma done.')
 catch
     disp('No OBGamma available. Skipping...')
@@ -59,7 +59,7 @@ try
 
     sleep_array = sleep_all;
     % save it in SleepScoring .mat file
-    save('SleepScoring_Accelero.mat','sleep_array','-append')
+    save('SleepScoring_Accelero.mat','sleep_array','-append','-v7.3')
     disp('Accelero done.')
 catch
     disp('No Accelero available. Skipping...')
