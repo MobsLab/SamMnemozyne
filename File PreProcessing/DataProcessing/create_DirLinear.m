@@ -6,7 +6,7 @@ function create_DirLinear(expe,nMice)
 % Written by SL - 2021-04
 
 %--------------- GET DIRECTORIES-------------------
-Dir = PathForExperimentsERC_SL(expe);
+Dir = PathForExperimentsERC(expe);
 % Dir = PathForExperimentsERC(expe);
 Dir = RestrictPathForExperiment(Dir,'nMice', nMice);
 
