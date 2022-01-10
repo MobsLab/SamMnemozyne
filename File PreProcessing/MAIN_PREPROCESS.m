@@ -17,22 +17,31 @@ function MAIN_PREPROCESS()
 %% VARIABLE INIT
 clear all
 % Mouse number & expe name
-mouse_num = 1199;
+mouse_num = 1117;
 % expe = 'UMazePAG';
 % expe = 'Reversal';
 expe = 'Novel';
 expe = 'StimMFBWake';
+expe = 'UMazePAG';
+expe = 'BaselineSleep';
+expe = 'Known';
 
 % set main directory
 workPath =  pwd;
 
 % sessions to linearalize and morph (UMaze)
-% sess = {'2-hab',...
-%         '3-pre-tests/pre1','3-pre-tests/pre2','3-pre-tests/pre3','3-pre-tests/pre4',...
-%         '4-cond/cond1','4-cond/cond2','4-cond/cond3','4-cond/cond4',...
-%         '4-cond/cond5','4-cond/cond6','4-cond/cond7','4-cond/cond8',...
-%         '6-post-tests/post1','6-post-tests/post2','6-post-tests/post3','6-post-tests/post4'} %,...
+sess = {'2-hab',...
+        '3-pre-tests/pre1','3-pre-tests/pre2','3-pre-tests/pre3','3-pre-tests/pre4',...
+        '4-cond/cond1','4-cond/cond2','4-cond/cond3','4-cond/cond4',...
+        '4-cond/cond5','4-cond/cond6','4-cond/cond7','4-cond/cond8',...
+        '6-post-tests/post1','6-post-tests/post2','6-post-tests/post3','6-post-tests/post4'}; %,...
         %'8-extinct'};
+sess = {'3-hab',...
+        '4-pre-tests/pre1','4-pre-tests/pre2','4-pre-tests/pre3','4-pre-tests/pre4',...
+        '5-cond/cond1','5-cond/cond2','5-cond/cond3','5-cond/cond4',...
+        '5-cond/cond5','5-cond/cond6','5-cond/cond7','5-cond/cond8',...
+        '7-post-tests/post1','7-post-tests/post2','7-post-tests/post3','7-post-tests/post4'};       
+        
 sess = {'2-Hab',...
         '3-Pre-Tests/pre1','3-Pre-Tests/pre2','3-Pre-Tests/pre3','3-Pre-Tests/pre4',...
         '3-Pre-Tests/pre5','3-Pre-Tests/pre6','3-Pre-Tests/pre7','3-Pre-Tests/pre8',...
@@ -46,8 +55,8 @@ sess = {'2-Hab',...
 sess = {'2-Hab',...
         '3-Pre-Tests/pre1','3-Pre-Tests/pre2','3-Pre-Tests/pre3','3-Pre-Tests/pre4',...
         '4-Cond/cond1','4-Cond/cond2','4-Cond/cond3','4-Cond/cond4',...
-        '4-Cond/cond5','4-Cond/cond6','4-Cond/cond7','4-Cond/cond8',...
         '6-Post-Tests/post1','6-Post-Tests/post2','6-Post-Tests/post3','6-Post-Tests/post4'};  
+    %         '4-Cond/cond5','4-Cond/cond6','4-Cond/cond7','4-Cond/cond8',...
     
 sess = {'2-Hab',...
         '3-Pre-Tests/pre1','3-Pre-Tests/pre2','3-Pre-Tests/pre3','3-Pre-Tests/pre4',...
@@ -77,16 +86,16 @@ else
     scoring = 'accelero';
 end
 ripthresh = [4 6; 2 5];     % [4 6; 2 5]; 
-delthresh = [2 1];       % [2 1];
+delthresh = [2 1];      % [2 1];
+spithresh = [1.5 2; 3 5]; % [2 3; 3 5];
+
+ripthresh = [4 6; 2 5];       % [4 6; 2 5]; 
+delthresh = [2.1 1.075];       % [2 1];
+spithresh = [2.3 3.4; 2.2 3.6];  % [2 3; 3 5];
+
+ripthresh = [3.75 5.5; 1.8 4.3];     % [4 6; 2 5]; 
+delthresh = [2.1 1.175];       % [2 1];
 spithresh = [2 3; 3 5]; % [2 3; 3 5];
-
-ripthresh = [3.5 5.6; 1.8 4.5];     % [4 6; 2 5]; 
-delthresh = [1.5 .8];       % [2 1];
-spithresh = [2.4 3.5; 3 5]; % [2 3; 3 5];
-
-ripthresh = [4 6; 2 5];     % [4 6; 2 5]; 
-delthresh = [2.2 1.1];       % [2 1];
-spithresh = [2.15 2.8; 2.25 3.8]; % [2 3; 3 5];
 
 % To do
 stim = 1;       % set to 1 if you have stim
@@ -103,7 +112,7 @@ cd(workPath);
 
 % CONVERT PYTHON to MATLAB (open ephys only)
 %
-% or use your terminal
+% or use your terminali=i+1;plot(Data(Restrict(tsdMovement,intervalSet(st(i)-5000,en(i)+5000)))); yline(mov_threshold)
 %   -> ~/Dropbox/Kteam/PrgMatlab/OnlinePlaceDecoding/matlab/convertEvents2Mat -p /path/to/events
 if oe
     convertEvents2Mat_multidir;
@@ -139,11 +148,11 @@ if ss
         load('behavResources.mat','TTLInfo');
         StimEpoch = intervalSet(Start(TTLInfo.StimEpoch)-3E2, Start(TTLInfo.StimEpoch)+3E3);
 %         Correct_SleepScoring_Theta('PlotFigure',1, 'smoothwindow', 1.2, 'StimEpoch', StimEpoch,'recompute',1);
-        SleepScoring_Accelero_OBgamma_tmp('PlotFigure',1, 'smoothwindow', 1.2, ...
+        SleepScoring_Accelero_OBgamma('PlotFigure',1, 'smoothwindow', 2.5, ...
             'StimEpoch', StimEpoch,'recompute',1,'continuity',1);
         gui_sleepscoring_verif
     else
-        SleepScoring_Accelero_OBgamma_tmp('PlotFigure',1, 'smoothwindow', 1.2, ...
+        SleepScoring_Accelero_OBgamma('PlotFigure',1, 'smoothwindow', 2.5, ...
             'recompute',1,'continuity',1);
         gui_sleepscoring_verif
     end   
@@ -162,14 +171,13 @@ if osc
     % selection)
     findthreshold_spi('scoring',scoring)
     % detect nrem events and substages
-    sleep_details('recompute',1,'stim',1,'down',0,'delta',1, ...
-        'rip',0,'spindle',0, 'substages',1,'idfig',1,'scoring',scoring, ...
+    sleep_details('recompute',1,'stim',1,'restrict',0,'down',0,'delta',1, ...
+        'rip',1,'spindle',1, 'substages',1,'idfig',1,'scoring',scoring, ...
         'spithresh',spithresh,'delthresh',delthresh,'ripthresh',ripthresh)
     % detect substages (it uses deltas and spindles to identify substages)
     % Make sure they are already well detected in the first place. 
     % The analysis will re-detect deltas during pre and post sleep sessions
     s_launchDeltaDetect(expe,mouse_num,scoring,delthresh)
-    
 end
 
 % HEART RATE
@@ -201,14 +209,17 @@ MakeData_Spikes('mua', 1,'recompute',1);
 
 % PREPARING NEURONS FILES
 CalcBasicNeuronInfo(workPath,1)
+RippleGroups = [1 2 3 4]; % set correct ripple groups (spike groups with ripples)
+save([workPath '/SpikeData.mat'],'RippleGroups','-append')
+% FindAllPlacefields -> need to manually input the mouse ID and expe
 FindAllPlaceFields
 
 % MAPPING THE PLACE FIELDS
 % If only one session -> unique = 1
 % If multi sessions:
-%           - pooled = 1 -> will poool togother the demanded sessions
+%           - pooled = 1 -> will pool togother the demanded sessions
 %           - pooled = 0 -> will not pool
 
-FiguresPlaceCellMap_session({'LookingForPF'}, ...
+FiguresPlaceCellMap_session({'Hab'}, ...
 'pooled',0,'recompute',0,'plotfig',1,'unique',1)
 
