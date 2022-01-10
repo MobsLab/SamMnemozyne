@@ -1,4 +1,4 @@
-function [figH_ind figH] = BehaviorERC_SL_v3(expe,Mice_to_analyze,numexpe,fixtrial,recompute)
+function [figH_ind figH] = BehaviorERC_SL_v3(expe,Mice_to_analyze,fixtrial,recompute)
 %BehaviorERC - Plot basic behavior comparisons of ERC experiment avergaed across mice.
 %
 % Plot occupance in the shock zone in the PreTests vs PostTests
@@ -31,21 +31,21 @@ old = 0;
 
 %-------------- CHOOSE FIGURE TO OUTPUT ----------
 % per mouse
-dirspeed = 1; %Trajectories with direction and speed analyses 
-trajdyn = 1; % Trajectories + barplot + zone dynamics 
-firstentry = 1; % 1st entry barplot per mouse
-trajoccup = 1; % trajectories and mean occupancy
+dirspeed = 0; %Trajectories with direction and speed analyses 
+trajdyn = 0; % Trajectories + barplot + zone dynamics 
+firstentry = 0; % 1st entry barplot per mouse
+trajoccup = 0; % trajectories and mean occupancy
 
-globalspeed =0;
-globalstats = 0; % global statistiques (not complete)
-heatmaps = 0; % heatmaps all mice
-traj_all = 0; %trajectories all mice
-finalfig = 0;
-heatstat = 0;
+globalspeed =1;
+globalstats =1; % global statistiques (not complete)
+heatmaps = 1; % heatmaps all mice
+traj_all = 1; %trajectories all mice
+finalfig = 1;
+heatstat = 1;
 
 %--------------- GET DIRECTORIES-------------------
 % Dir = PathForExperimentsERC_SL(expe);
-Dir = PathForExperimentsERC_SL(expe);
+Dir = PathForExperimentsERC(expe);
 Dir = RestrictPathForExperiment(Dir,'nMice', unique(Mice_to_analyze));
 
 %-------------- MAP PARAMETERS -----------
@@ -487,60 +487,60 @@ end
 
 % DIRECTION and SPEED
 if dirspeed || globalspeed
-    ii=0;
-    for i=1:length(a)
-        if numexpe(i)<2
-            ii=ii+1;
-        end
-        load([Dir.path{ii}{numexpe(i)} '/behavResources.mat'], 'SpeedDir');
-        if ~exist('SpeedDir','var') || recompute
-            %Pre-tests
-            for k=1:length(id_Pre{i})
-                beh = a{i}.behavResources;
-                idx = id_Pre{i}(k);
-                [xdir{1,k} ydir{1,k} vdir{1,k} speed(1,k,1:3)] = SpeedUmaze(beh, idx);
-            end
-            %Cond
-            for k=1:length(id_Cond{i})
-                beh = a{i}.behavResources;
-                idx = id_Cond{i}(k);
-                [xdir{2,k} ydir{2,k} vdir{2,k} speed(2,k,1:3)] = SpeedUmaze(beh, idx);
-            end
-            %Post-tests
-            for k=1:length(id_Post{i})
-                beh = a{i}.behavResources;
-                idx = id_Post{i}(k);
-                [xdir{3,k} ydir{3,k} vdir{3,k} speed(3,k,1:3)] = SpeedUmaze(beh, idx);
-            end
-            % grouped by session
-            for idir=1:2
-                for isess=1:3
-                    if isess==2
-                        it = nbcond{i};
-                    else
-                        it = nbprepost(i);
-                    end
-                    all_mean(isess,idir) = nanmean(speed(isess,1:it,idir)); 
+    i=0;
+    for ii = 1:length(Dir.path)
+        for iexp=1:length(Dir.path{ii})
+            i=i+1;
+            load([Dir.path{ii}{iexp} '/behavResources.mat'], 'SpeedDir');
+            if ~exist('SpeedDir','var') || recompute
+                %Pre-tests
+                for k=1:length(id_Pre{i})
+                    beh = a{i}.behavResources;
+                    idx = id_Pre{i}(k);
+                    [xdir{1,k} ydir{1,k} vdir{1,k} speed(1,k,1:3)] = SpeedUmaze(beh, idx);
                 end
+                %Cond
+                for k=1:length(id_Cond{i})
+                    beh = a{i}.behavResources;
+                    idx = id_Cond{i}(k);
+                    [xdir{2,k} ydir{2,k} vdir{2,k} speed(2,k,1:3)] = SpeedUmaze(beh, idx);
+                end
+                %Post-tests
+                for k=1:length(id_Post{i})
+                    beh = a{i}.behavResources;
+                    idx = id_Post{i}(k);
+                    [xdir{3,k} ydir{3,k} vdir{3,k} speed(3,k,1:3)] = SpeedUmaze(beh, idx);
+                end
+                % grouped by session
+                for idir=1:2
+                    for isess=1:3
+                        if isess==2
+                            it = nbcond{i};
+                        else
+                            it = nbprepost(i);
+                        end
+                        all_mean(isess,idir) = nanmean(speed(isess,1:it,idir)); 
+                    end
+                end
+                % prep by mouse
+                sd{i}.xdir = xdir;
+                sd{i}.ydir = ydir;
+                sd{i}.vdir = vdir;
+                sd{i}.speed = speed;
+                allmean_gr(i,1:3,1:2) = all_mean;
+                % saving to file (make future run faster)
+                SpeedDir.xdir = xdir;
+                SpeedDir.ydir = ydir;
+                SpeedDir.vdir = vdir;
+                SpeedDir.speed = speed;
+                SpeedDir.all_mean = all_mean;            
+                save([Dir.path{ii}{iexp} '/behavResources.mat'], 'SpeedDir','-append');
+                clear SpeedDir
+            else
+                load([Dir.path{ii}{iexp} '/behavResources.mat'], 'SpeedDir');
+                sd{i} = SpeedDir;
+                allmean_gr(i,1:3,1:2) = sd{i}.all_mean;
             end
-            % prep by mouse
-            sd{i}.xdir = xdir;
-            sd{i}.ydir = ydir;
-            sd{i}.vdir = vdir;
-            sd{i}.speed = speed;
-            allmean_gr(i,1:3,1:2) = all_mean;
-            % saving to file (make future run faster)
-            SpeedDir.xdir = xdir;
-            SpeedDir.ydir = ydir;
-            SpeedDir.vdir = vdir;
-            SpeedDir.speed = speed;
-            SpeedDir.all_mean = all_mean;            
-            save([Dir.path{i}{1} '/behavResources.mat'], 'SpeedDir','-append');
-            clear SpeedDir
-        else
-            load([Dir.path{ii}{numexpe(i)} '/behavResources.mat'], 'SpeedDir');
-            sd{i} = SpeedDir;
-            allmean_gr(i,1:3,1:2) = sd{i}.all_mean;
         end
     end
 end
