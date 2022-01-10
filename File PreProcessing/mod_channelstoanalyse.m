@@ -190,27 +190,40 @@ for i = 1:2:length(varargin)
                 error('Incorrect value for property ''PFCx_spindle''.');
             end   
          case 'ref'
-            Ref = varargin{i+1};
-            ExpeInfo.ChannelToAnalyse.Ref=Ref;
+            ThetaREM = varargin{i+1};
+            ExpeInfo.ChannelToAnalyse.Ref=ThetaREM;
             load([pwd '/ChannelsToAnalyse/Ref.mat']);
-            channel=Ref;
+            channel=ThetaREM;
             save([pwd '/ChannelsToAnalyse/Ref.mat'],'channel');
-            if ~isnumeric(Ref) 
+            if ~isnumeric(ThetaREM) 
                 error('Incorrect value for property ''Ref''.');
             end   
-         case 'nonhpc'
-            nonhpc = varargin{i+1};
-            ExpeInfo.ChannelToAnalyse.nonHPC=nonhpc;
+         case 'nonrip'
+            nonrip = varargin{i+1};
+            ExpeInfo.ChannelToAnalyse.nonRip=nonrip;
             try
-                load([pwd '/ChannelsToAnalyse/nonHPC.mat']);
+                load([pwd '/ChannelsToAnalyse/nonRip.mat']);
             catch
                 disp(['No ' (lower(varargin{i})) ' .mat file found. Creating...'])
             end
-            channel=nonhpc;
-            save([pwd '/ChannelsToAnalyse/nonHPC.mat'],'channel');
-            if ~isnumeric(nonhpc) 
-                error('Incorrect value for property ''nonHPC''.');
+            channel=nonrip;
+            save([pwd '/ChannelsToAnalyse/nonRip.mat'],'channel');
+            if ~isnumeric(nonrip) 
+                error('Incorrect value for property ''nonRip''.');
             end  
+         case 'thetarem'
+            ThetaREM = varargin{i+1};
+            ExpeInfo.ChannelToAnalyse.Ref=ThetaREM;
+            try
+                load([pwd '/ChannelsToAnalyse/ThetaREM.mat']);
+            catch
+                disp(['No ' (lower(varargin{i})) ' .mat file found. Creating...'])
+            end
+            channel=ThetaREM;
+            save([pwd '/ChannelsToAnalyse/ThetaREM.mat'],'channel');
+            if ~isnumeric(ThetaREM) 
+                error('Incorrect value for property ''ThetaREM''.');
+            end   
          otherwise
             error(['Unknown property ''' num2str(varargin{i}) '''.']);
     end
