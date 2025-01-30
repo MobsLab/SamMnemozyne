@@ -84,8 +84,10 @@ if savfig
 end
 
 % special case for Matlab on Linux using in root 
+pcname_tmp = evalc('system(''hostname'');');
+pcname = pcname_tmp(1:length(pcname_tmp)-1); 
 if isunix
-    system(['sudo chown -R hobbes /' dirPath]);
+    system(['sudo chown -R ' pcname ' ' dirPath]);
 end
 end
 

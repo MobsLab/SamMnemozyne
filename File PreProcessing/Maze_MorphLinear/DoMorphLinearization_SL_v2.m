@@ -31,7 +31,7 @@ for isess = 1:length(sess)
     load('behavResources.mat','LinearDist')
     if ~exist('LinearDist','var')
         load behavResources.mat
-        figure('units', 'normalized', 'outerposition', [0 1 0.5 0.8]);
+        figure('units', 'normalized', 'outerposition', [0.5 1 0.5 0.8]);
         imagesc(mask+Zone{1})
         curvexy=ginput(4);
         clf

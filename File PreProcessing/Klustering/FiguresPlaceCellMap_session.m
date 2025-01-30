@@ -118,10 +118,15 @@ LocomotionEpoch = thresholdIntervals(Vtsd,5,'Direction', 'Above');
 hist(Data(Vtsd), 100)
 
 if ~unique
-    if ~isnan(sum(Data(AlignedXtsd)))
-        XS = Restrict(AlignedXtsd,LocomotionEpoch);
-        YS = Restrict(AlignedYtsd,LocomotionEpoch);
-    else
+    try ~isnan(sum(Data(AlignedXtsd)))
+        if ~isnan(sum(Data(AlignedXtsd)))
+            XS = Restrict(AlignedXtsd,LocomotionEpoch);
+            YS = Restrict(AlignedYtsd,LocomotionEpoch);
+        else
+            XS = Restrict(Xtsd,LocomotionEpoch);
+            YS = Restrict(Ytsd,LocomotionEpoch);
+        end
+    catch
         XS = Restrict(Xtsd,LocomotionEpoch);
         YS = Restrict(Ytsd,LocomotionEpoch);
     end
@@ -210,7 +215,7 @@ if pooled % pooled sessions
 
     % special case for Matlab on Linux using in root 
     if isunix
-        system(['sudo chown -R mobs /' dirPath]);
+        system(['sudo chown -R hobbes /' dirPath]);
     end
     
 else  % individual sessions
@@ -264,7 +269,7 @@ else  % individual sessions
 
             % special case for Matlab on Linux using in root 
             if isunix
-                system(['sudo chown -R mobs /' dirPath]);
+                system(['sudo chown -R hobbes /' dirPath]);
             end
         end
     else
@@ -314,7 +319,7 @@ else  % individual sessions
 
         % special case for Matlab on Linux using in root 
         if isunix
-            system(['sudo chown -R mobs /' dirPath]);
+            system(['sudo chown -R hobbes /' dirPath]);
         end
     end
 end

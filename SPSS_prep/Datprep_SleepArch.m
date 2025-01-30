@@ -24,13 +24,14 @@ numexpe{5} = [1 1];
 %% SPSS DATA PREP
 clear mat
 
-% data
+% percentage
 len = length(sstage.per_nowake.nrem);
 stg{1} = sstage.per_nowake.nrem;
 stg{2} = sstage.per_nowake.rem;
 stg{3} = sstage.per_nowake.n1;
 stg{4} = sstage.per_nowake.n2;
 stg{5} = sstage.per_nowake.n3;
+id = sstage.miceID;
 mat=nan(length(expe)*length(stg{1}),2*5);
 for istg=1:5
     k=1;
@@ -40,12 +41,14 @@ for istg=1:5
                 mat(k,isess+(istg*2)-2) = stg{istg}(iexp,isess,isuj); 
                 gr(k,1) = iexp;
             end
+            mID(k,1) = id(isuj,iexp);
             k=k+1;
         end
     end
 end
 
 % difference
+clear stg
 len = length(sstage.diff_per_nowake.nrem);
 stg{1} = sstage.diff_per_nowake.nrem;
 stg{2} = sstage.diff_per_nowake.rem;
@@ -64,6 +67,28 @@ for istg=1:5
     end
 end
 
+% percentage
+clear stg
+len = length(sstage.dur.nrem);
+stg{1} = sstage.dur.nrem;
+stg{2} = sstage.dur.rem;
+stg{3} = sstage.dur.n1;
+stg{4} = sstage.dur.n2;
+stg{5} = sstage.dur.n3;
+matdur=nan(length(expe)*length(stg{1}),2*5);
+for istg=1:5
+    k=1;
+    for iexp=1:length(expe)
+        for isuj=1:len
+            for isess=1:2
+                matdur(k,isess+(istg*2)-2) = stg{istg}(iexp,isess,isuj); 
+                gr(k,1) = iexp;
+            end
+            mID(k,1) = id(isuj,iexp);
+            k=k+1;
+        end
+    end
+end
 
 
 %% Manually transfer to generic matrix (mat)

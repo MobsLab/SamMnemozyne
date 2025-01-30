@@ -42,10 +42,6 @@ disp('All hail the Holy Octopus')
 
 %% FIX
 
-
-
-
-
 %Then use this script changing the correct session in
 %BehavResourcesConcatenation.m
 %

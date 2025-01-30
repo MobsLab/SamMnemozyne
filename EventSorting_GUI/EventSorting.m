@@ -49,7 +49,7 @@ switch evtType
         if exist([pwd '/SpindlesSorted.mat'],'file')
             load([pwd '/SpindlesSorted.mat']);
         else
-            load([pwd '/Spindles.mat']);
+            load([pwd '/sSpindles.mat']);
         end
         load([pwd '/ChannelsToAnalyse/PFCx_spindle.mat'],'channel');
 end

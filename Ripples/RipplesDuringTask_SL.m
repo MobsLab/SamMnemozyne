@@ -346,7 +346,7 @@ Post_VZmean_std = std(VZmean_post,0,2);
 Cond_VZmean_mean = mean(VZmean_cond,2);
 Cond_VZmean_std = std(VZmean_cond,0,2);
 % Wilcoxon test
-p_VZmean_pre_post = signrank(Pre_VZmean_mean, Post_VZmean_mean);
+% p_VZmean_pre_post = signrank(Pre_VZmean_mean, Post_VZmean_mean);
 
 %% Prepare intervalSets for ripples
 for isuj=1:num

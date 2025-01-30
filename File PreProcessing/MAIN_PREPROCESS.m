@@ -17,7 +17,7 @@ function MAIN_PREPROCESS()
 %% VARIABLE INIT
 clear all
 % Mouse number & expe name
-mouse_num = 1117;
+mouse_num = 1336;
 % expe = 'UMazePAG';
 % expe = 'Reversal';
 expe = 'Novel';
@@ -89,12 +89,12 @@ ripthresh = [4 6; 2 5];     % [4 6; 2 5];
 delthresh = [2 1];      % [2 1];
 spithresh = [1.5 2; 3 5]; % [2 3; 3 5];
 
-ripthresh = [4 6; 2 5];       % [4 6; 2 5]; 
-delthresh = [2.1 1.075];       % [2 1];
-spithresh = [2.3 3.4; 2.2 3.6];  % [2 3; 3 5];
+ripthresh = [4 6; 2.2 5.3];     % [4 6; 2 5]; 
+delthresh = [2.5 1.5];       % [2 1];
+spithresh = [2 3; 3 5]; % [2 3; 3 5];
 
-ripthresh = [3.75 5.5; 1.8 4.3];     % [4 6; 2 5]; 
-delthresh = [2.1 1.175];       % [2 1];
+ripthresh = [3.8 5.6; 1.8 4.7];     % [4 6; 2 5]; 
+delthresh = [1.1 2.25];       % [2 1];
 spithresh = [2 3; 3 5]; % [2 3; 3 5];
 
 % To do
@@ -106,6 +106,7 @@ osc = 1;        % set to 1 to process ripples, spindles, delta waves and substag
 %% MAIN
 
 % MORPH and LINEARALIZE UMAZE
+workPath = pwd;
 DoMorphLinearization_SL_v2(sess);
 cd(workPath);
 %Do a re-run to make sure all folders are done.
@@ -140,7 +141,7 @@ GUI_StepOne_ExperimentInfo;
 
 
 % Create Direction data
-create_DirLinear(expe,mouse_num)
+create_DirLinear(expe,mouse_num)  % check PathForExp
 
 % SLEEP SCORING
 if ss
@@ -177,6 +178,7 @@ if osc
     % detect substages (it uses deltas and spindles to identify substages)
     % Make sure they are already well detected in the first place. 
     % The analysis will re-detect deltas during pre and post sleep sessions
+    % IMportant: needs to be added to PathForExp
     s_launchDeltaDetect(expe,mouse_num,scoring,delthresh)
 end
 
@@ -209,10 +211,12 @@ MakeData_Spikes('mua', 1,'recompute',1);
 
 % PREPARING NEURONS FILES
 CalcBasicNeuronInfo(workPath,1)
+
 RippleGroups = [1 2 3 4]; % set correct ripple groups (spike groups with ripples)
-save([workPath '/SpikeData.mat'],'RippleGroups','-append')
-% FindAllPlacefields -> need to manually input the mouse ID and expe
-FindAllPlaceFields
+RippleGroups = [1 2 3];
+save([pwd '/SpikeData.mat'],'RippleGroups','-append')
+% FindAllPlacefields 
+FindAllPlaceFields(pwd,expe)
 
 % MAPPING THE PLACE FIELDS
 % If only one session -> unique = 1
@@ -220,6 +224,9 @@ FindAllPlaceFields
 %           - pooled = 1 -> will pool togother the demanded sessions
 %           - pooled = 0 -> will not pool
 
+FiguresPlaceCellMap_session({'TestPre1','TestPre2','TestPre3','TestPre4',...
+    'TestPre5','TestPre6','TestPre7','TestPre8'}, ...
+    'pooled',1,'recompute',1,'plotfig',1,'unique',1)
 FiguresPlaceCellMap_session({'Hab'}, ...
-'pooled',0,'recompute',0,'plotfig',1,'unique',1)
+    'pooled',0,'recompute',0,'plotfig',1,'unique',0)
 

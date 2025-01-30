@@ -117,6 +117,8 @@ switch expe
         cond = 1;     
     case 'FirstExploNew'
         cond = 1;
+    case 'Novel'
+        cond = 1;
 end
 
 %% Find indices of PreTests and PostTest and Cond session in the structure
@@ -165,29 +167,16 @@ end
 
 %% Get X and Y data
 for i=1:length(a)
-%     try
-%         for k=1:length(id_Pre{i})
-%             xdat_pre{i,k}  = a{i}.behavResources(id_Pre{i}(k)).CleanAlignedXtsd;
-%             xdat_post{i,k} = a{i}.behavResources(id_Post{i}(k)).CleanAlignedXtsd;
-%             ydat_pre{i,k}  = a{i}.behavResources(id_Pre{i}(k)).CleanAlignedYtsd;
-%             ydat_post{i,k} = a{i}.behavResources(id_Post{i}(k)).CleanAlignedYtsd;
-%         end
-%         for k=1:length(id_Cond{i})
-%             xdat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).CleanAlignedXtsd;
-%             ydat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).CleanAlignedYtsd;
-%         end
-%     catch
-        for k=1:length(id_Pre{i})
-            xdat_pre{i,k}  = a{i}.behavResources(id_Pre{i}(k)).AlignedXtsd;
-            xdat_post{i,k} = a{i}.behavResources(id_Post{i}(k)).AlignedXtsd;
-            ydat_pre{i,k}  = a{i}.behavResources(id_Pre{i}(k)).AlignedYtsd;
-            ydat_post{i,k} = a{i}.behavResources(id_Post{i}(k)).AlignedYtsd;
-        end
-        for k=1:length(id_Cond{i})
-            xdat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).AlignedXtsd;
-            ydat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).AlignedYtsd;
-        end
-%     end
+    for k=1:length(id_Pre{i})
+        xdat_pre{i,k}  = a{i}.behavResources(id_Pre{i}(k)).AlignedXtsd;
+        xdat_post{i,k} = a{i}.behavResources(id_Post{i}(k)).AlignedXtsd;
+        ydat_pre{i,k}  = a{i}.behavResources(id_Pre{i}(k)).AlignedYtsd;
+        ydat_post{i,k} = a{i}.behavResources(id_Post{i}(k)).AlignedYtsd;
+    end
+    for k=1:length(id_Cond{i})
+        xdat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).AlignedXtsd;
+        ydat_cond{i,k}  = a{i}.behavResources(id_Cond{i}(k)).AlignedYtsd;
+    end
 end
 
 
@@ -777,7 +766,6 @@ for i=1:length(a)
                 set(h_occ, 'LineWidth', 1);
                 set(her_occ, 'LineWidth', 1);
                 line(xlim,[21.5 21.5],'Color','k','LineStyle','--','LineWidth',1);
-                ylabel('% time');
                 ylim([0 100])
                 title('Cond')
             
@@ -792,7 +780,6 @@ for i=1:length(a)
                 set(h_occ, 'LineWidth', 1);
                 set(her_occ, 'LineWidth', 1);
                 line(xlim,[21.5 21.5],'Color','k','LineStyle','--','LineWidth',1);
-                ylabel('% time');
                 ylim([0 100])   
                 title('Post-tests')
                 
